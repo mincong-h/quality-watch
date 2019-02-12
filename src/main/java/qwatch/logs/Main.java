@@ -9,17 +9,18 @@ import qwatch.logs.model.LogEntry;
 
 public class Main {
 
+  private static final int N = 10;
   private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
   public static void main(String... args) {
     String path = args[0];
     Either<String, List<LogEntry>> either = CsvImporter.importLogEntries(Paths.get(path));
-    if (either.isRight()) {
-      for (LogEntry entry : either.get()) {
-        logger.info("{}", entry);
-      }
-    } else {
+    if (either.isLeft()) {
       logger.error("{}", either.getLeft());
+      return;
     }
+    List<LogEntry> entries = either.get();
+    logger.info("{} entries extracted.", entries.size());
+    logger.info("Top {} errors:\n{}", N, new SummaryExtractor(entries).top(N));
   }
 }
