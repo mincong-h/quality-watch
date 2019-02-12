@@ -105,7 +105,7 @@ public class CsvImporter {
             i++;
           }
         }
-        row[columnIdx] = new String(arr, left, i - left);
+        row[columnIdx] = new String(arr, left, i - left).replaceAll("\"\"", "\"");
         columnIdx++;
         i++; // skip qualifier
         if (columnIdx == cols) {

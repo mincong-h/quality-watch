@@ -64,10 +64,10 @@ public class CsvImporterTest {
         .hasSize(2)
         .containsExactly(new String[] {"A", "B", "C"}, new String[] {"a", "b", "c"});
 
-    List<String[]> rows2 = CsvImporter.internalParseCsv("A,B,C\na,b,\"c1\"", 3).get().toJavaList();
+    List<String[]> rows2 = CsvImporter.internalParseCsv("A,B,C\na,b,\"c1\"\"c2\"", 3).get().toJavaList();
     assertThat(rows2)
         .hasSize(2)
-        .containsExactly(new String[] {"A", "B", "C"}, new String[] {"a", "b", "c1"});
+        .containsExactly(new String[] {"A", "B", "C"}, new String[] {"a", "b", "c1\"c2"});
 
     List<String[]> rows3 = CsvImporter.internalParseCsv("a,b,\"c1\nc2\"", 3).get().toJavaList();
     assertThat(rows3).hasSize(1).containsExactly(new String[] {"a", "b", "c1\nc2"});
