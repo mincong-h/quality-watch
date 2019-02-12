@@ -28,6 +28,8 @@ public abstract class LogEntry { // NOSONAR: AutoValue
   /** Column: "message" */
   public abstract String message();
 
+  public abstract Builder toBuilder();
+
   @AutoValue.Builder
   public abstract static class Builder { // NOSONAR: AutoValue
 
