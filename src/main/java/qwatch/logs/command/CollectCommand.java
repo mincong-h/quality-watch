@@ -17,8 +17,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qwatch.logs.CsvImporter;
 import qwatch.logs.model.LogEntry;
+import qwatch.logs.util.CsvImporter;
 import qwatch.logs.util.JsonExportUtil;
 
 /**

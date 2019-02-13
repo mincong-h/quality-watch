@@ -1,4 +1,4 @@
-package qwatch.logs;
+package qwatch.logs.util;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,6 +11,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import qwatch.logs.model.LogEntry;
+import qwatch.logs.util.CsvImporter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,4 +1,4 @@
-package qwatch.logs;
+package qwatch.logs.util;
 
 import io.vavr.collection.List;
 import io.vavr.control.Either;
