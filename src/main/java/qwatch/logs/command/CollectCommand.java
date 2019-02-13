@@ -1,13 +1,12 @@
 package qwatch.logs.command;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
+import io.vavr.collection.SortedSet;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -20,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.logs.CsvImporter;
 import qwatch.logs.model.LogEntry;
-import qwatch.logs.util.ObjectMapperFactory;
+import qwatch.logs.util.JsonExportUtil;
 
 /**
  * Collect command.
@@ -58,7 +57,6 @@ public class CollectCommand implements Command<Try<Void>> {
     }
   }
 
-  private final ObjectMapper objectMapper = ObjectMapperFactory.newObjectMapper();
   private final Path logDir;
 
   private CollectCommand(Builder builder) {
@@ -90,24 +88,16 @@ public class CollectCommand implements Command<Try<Void>> {
   }
 
   private Try<Void> export(Seq<List<LogEntry>> logsSequence) {
-    Map<LocalDate, List<LogEntry>> entriesByDay =
+    Map<LocalDate, SortedSet<LogEntry>> entriesByDay =
         logsSequence
             .flatMap(Function.identity())
             .toList()
-            .groupBy(entry -> entry.dateTime().toLocalDate());
-    for (Tuple2<LocalDate, List<LogEntry>> t : entriesByDay) {
+            .groupBy(entry -> entry.dateTime().toLocalDate())
+            .mapValues(v -> v.toSortedSet((e1, e2) -> e1.dateTime().compareTo(e2.dateTime())));
+    for (Tuple2<LocalDate, SortedSet<LogEntry>> t : entriesByDay) {
       String filename = "log." + DateTimeFormatter.ISO_DATE.format(t._1) + ".json";
-      Path path = Paths.get("/Users/mincong/Desktop/datadog").resolve(filename);
-      try {
-        Files.deleteIfExists(path);
-      } catch (IOException e) {
-        logger.error("{}", e);
-      }
-      try (FileWriter w = new FileWriter(path.toFile())) {
-        objectMapper.writeValue(w, t._2.sortBy(LogEntry::dateTime).toJavaList());
-      } catch (IOException e) {
-        logger.error("{}", e);
-      }
+      Path path = Paths.get("/Users/mincong/datadog").resolve(filename);
+      JsonExportUtil.export(path, t._2);
     }
     return Try.success(null);
   }

@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import qwatch.logs.command.CollectCommand;
 
 public class Main {
-
+  // TODO: Merge new JSON with existing ones
   //  private static final int N = 10;
   private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
