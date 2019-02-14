@@ -4,6 +4,7 @@ import io.vavr.Tuple2;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
+import io.vavr.collection.Set;
 import io.vavr.collection.SortedSet;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import qwatch.logs.model.LogEntry;
 import qwatch.logs.util.CsvImporter;
 import qwatch.logs.util.JsonExportUtil;
+import qwatch.logs.util.JsonImportUtil;
 
 /**
  * Collect command.
@@ -66,6 +68,9 @@ public class CollectCommand implements Command<Try<Void>> {
 
   @Override
   public Try<Void> execute() {
+    Path srcDir = Paths.get("/Users/mincong/datadog");
+    SortedSet<LogEntry> entries = JsonImportUtil.importLogEntries(srcDir);
+
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(logDir, "extract-*.csv")) {
       List<Either<String, List<LogEntry>>> results = List.empty();
       for (Path csv : stream) {
@@ -79,7 +84,8 @@ public class CollectCommand implements Command<Try<Void>> {
       }
       Either<Seq<String>, Seq<List<LogEntry>>> seq = Either.sequence(results);
       if (seq.isRight()) {
-        return export(seq.get());
+        entries = entries.addAll(seq.get().flatMap(Function.identity()).toList());
+        return export(entries);
       } else {
         return Try.success(null);
       }
@@ -88,11 +94,9 @@ public class CollectCommand implements Command<Try<Void>> {
     }
   }
 
-  private Try<Void> export(Seq<List<LogEntry>> logsSequence) {
+  private Try<Void> export(Set<LogEntry> logEntries) {
     Map<LocalDate, SortedSet<LogEntry>> entriesByDay =
-        logsSequence
-            .flatMap(Function.identity())
-            .toList()
+        logEntries
             .groupBy(entry -> entry.dateTime().toLocalDate())
             .mapValues(v -> v.toSortedSet((e1, e2) -> e1.dateTime().compareTo(e2.dateTime())));
     for (Tuple2<LocalDate, SortedSet<LogEntry>> t : entriesByDay) {
