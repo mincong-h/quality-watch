@@ -5,6 +5,7 @@ import io.vavr.control.Either;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class CsvImporter {
     String message = columns[3];
     ZonedDateTime d;
     try {
-      d = ZonedDateTime.parse(dateStr);
+      d = ZonedDateTime.parse(dateStr).withZoneSameLocal(ZoneId.of("UTC"));
     } catch (DateTimeParseException e) {
       return Either.left("Unable to parse date: " + dateStr);
     }

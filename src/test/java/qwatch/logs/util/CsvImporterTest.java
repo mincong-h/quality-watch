@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import qwatch.logs.model.LogEntry;
-import qwatch.logs.util.CsvImporter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class CsvImporterTest {
 
-  private static final ZoneId Z = ZoneId.of("Z");
+  private static final ZoneId UTC = ZoneId.of("UTC");
 
   @Rule public TemporaryFolder tempDir = new TemporaryFolder();
 
@@ -40,17 +39,23 @@ public class CsvImporterTest {
 
   @Test
   public void importLogEntries() {
+    // Given a CSV file where 2 log entries are available
+    // When importing it
     List<LogEntry> entries = CsvImporter.importLogEntries(logPath).get().toJavaList();
+
+    // Then the import is successful
+    // and zone id is 'UTC', same as JSON object mapper
+    // (we need to keep deserialization same everywhere)
     LogEntry expectedEntry1 =
         LogEntry.newBuilder()
-            .dateTime(LocalDateTime.of(2019, 2, 11, 12, 13, 57, 916_000_000).atZone(Z))
+            .dateTime(LocalDateTime.of(2019, 2, 11, 12, 13, 57, 916_000_000).atZone(UTC))
             .service("nos-15")
             .status("error")
             .message("Project foo not found.")
             .build();
     LogEntry expectedEntry2 =
         LogEntry.newBuilder()
-            .dateTime(LocalDateTime.of(2019, 2, 11, 12, 13, 57, 917_000_000).atZone(Z))
+            .dateTime(LocalDateTime.of(2019, 2, 11, 12, 13, 57, 917_000_000).atZone(UTC))
             .service("nos-15")
             .status("error")
             .message("First line\nanother line")
@@ -65,7 +70,8 @@ public class CsvImporterTest {
         .hasSize(2)
         .containsExactly(new String[] {"A", "B", "C"}, new String[] {"a", "b", "c"});
 
-    List<String[]> rows2 = CsvImporter.internalParseCsv("A,B,C\na,b,\"c1\"\"c2\"", 3).get().toJavaList();
+    List<String[]> rows2 =
+        CsvImporter.internalParseCsv("A,B,C\na,b,\"c1\"\"c2\"", 3).get().toJavaList();
     assertThat(rows2)
         .hasSize(2)
         .containsExactly(new String[] {"A", "B", "C"}, new String[] {"a", "b", "c1\"c2"});

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
 import java.time.ZonedDateTime;
+import java.util.Comparator;
 
 /**
  * Log Entry is an log event in a log file.
@@ -14,6 +15,12 @@ import java.time.ZonedDateTime;
 @AutoValue
 @JsonDeserialize(builder = AutoValue_LogEntry.Builder.class)
 public abstract class LogEntry { // NOSONAR: AutoValue
+
+  public static final Comparator<LogEntry> BY_DATE =
+      Comparator.comparing(LogEntry::dateTime)
+          .thenComparing(LogEntry::message)
+          .thenComparing(LogEntry::service)
+          .thenComparing(LogEntry::status);
 
   public static Builder newBuilder() {
     return new AutoValue_LogEntry.Builder();

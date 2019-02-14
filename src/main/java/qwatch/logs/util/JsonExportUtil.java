@@ -28,7 +28,7 @@ public class JsonExportUtil {
       logger.error("{}", e);
     }
     try (FileWriter w = new FileWriter(path.toFile())) {
-      mapper.writeValue(w, logEntries.toJavaSet());
+      mapper.writeValue(w, logEntries.toJavaList());
     } catch (IOException e) {
       logger.error("{}", e);
     }

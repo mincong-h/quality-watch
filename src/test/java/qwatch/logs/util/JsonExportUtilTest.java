@@ -2,7 +2,6 @@ package qwatch.logs.util;
 
 import io.vavr.collection.TreeSet;
 import java.nio.file.Path;
-import java.util.Comparator;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -21,7 +20,7 @@ public class JsonExportUtilTest {
   @Test
   public void export() throws Exception {
     Path destination = tempDir.newFile().toPath();
-    JsonExportUtil.export(destination, TreeSet.empty(Comparator.comparing(LogEntry::dateTime)));
+    JsonExportUtil.export(destination, TreeSet.empty(LogEntry.BY_DATE));
     assertThat(destination).hasContent("[ ]");
   }
 }

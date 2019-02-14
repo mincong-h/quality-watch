@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import qwatch.logs.command.CollectCommand;
 
 public class Main {
+  // TODO Implement the stats command
   //  private static final int N = 10;
   private static final Logger logger = LoggerFactory.getLogger(Main.class);
 

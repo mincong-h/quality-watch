@@ -2,6 +2,8 @@ package qwatch.logs.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import io.vavr.collection.HashSet;
+import io.vavr.collection.Set;
 import io.vavr.collection.SortedSet;
 import io.vavr.collection.TreeSet;
 import java.io.IOException;
@@ -25,8 +27,8 @@ public class JsonImportUtil {
   private static final Logger logger = LoggerFactory.getLogger(JsonImportUtil.class);
   private static final ObjectMapper mapper = ObjectMapperFactory.newObjectMapper();
 
-  public static SortedSet<LogEntry> importLogEntries(Path dir) {
-    TreeSet<LogEntry> values = TreeSet.empty(Comparator.comparing(LogEntry::dateTime));
+  public static Set<LogEntry> importLogEntries(Path dir) {
+    Set<LogEntry> values = HashSet.empty();
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "log*.json")) {
       for (Path jsonFile : stream) {
         values = values.addAll(importLogEntriesFromFile(jsonFile));
@@ -37,8 +39,8 @@ public class JsonImportUtil {
     return values;
   }
 
-  private static SortedSet<LogEntry> importLogEntriesFromFile(Path path) {
-    TreeSet<LogEntry> values = TreeSet.empty(Comparator.comparing(LogEntry::dateTime));
+  static Set<LogEntry> importLogEntriesFromFile(Path path) {
+    Set<LogEntry> values = HashSet.empty();
     ObjectReader reader = mapper.readerFor(LogEntry.class);
     try {
       Iterator<LogEntry> iterator = reader.readValues(path.toFile());

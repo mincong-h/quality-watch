@@ -6,6 +6,7 @@ import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import io.vavr.collection.Set;
 import io.vavr.collection.SortedSet;
+import io.vavr.collection.TreeSet;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 import java.io.IOException;
@@ -69,7 +70,7 @@ public class CollectCommand implements Command<Try<Void>> {
   @Override
   public Try<Void> execute() {
     Path srcDir = Paths.get("/Users/mincong/datadog");
-    SortedSet<LogEntry> entries = JsonImportUtil.importLogEntries(srcDir);
+    Set<LogEntry> entries = JsonImportUtil.importLogEntries(srcDir);
 
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(logDir, "extract-*.csv")) {
       List<Either<String, List<LogEntry>>> results = List.empty();
@@ -98,7 +99,7 @@ public class CollectCommand implements Command<Try<Void>> {
     Map<LocalDate, SortedSet<LogEntry>> entriesByDay =
         logEntries
             .groupBy(entry -> entry.dateTime().toLocalDate())
-            .mapValues(v -> v.toSortedSet((e1, e2) -> e1.dateTime().compareTo(e2.dateTime())));
+            .mapValues(v -> TreeSet.ofAll(LogEntry.BY_DATE, v));
     for (Tuple2<LocalDate, SortedSet<LogEntry>> t : entriesByDay) {
       String filename = "log." + DateTimeFormatter.ISO_DATE.format(t._1) + ".json";
       Path path = Paths.get("/Users/mincong/datadog").resolve(filename);
