@@ -36,7 +36,7 @@ public class CollectCommand implements Command<Try<Void>> {
     return new Builder();
   }
 
-  public static class Builder {
+  public static class Builder implements CommandBuilder<CollectCommand> {
     private Path logDir;
 
     private Builder() {}
@@ -52,6 +52,7 @@ public class CollectCommand implements Command<Try<Void>> {
       return this;
     }
 
+    @Override
     public CollectCommand build() {
       return new CollectCommand(this);
     }
