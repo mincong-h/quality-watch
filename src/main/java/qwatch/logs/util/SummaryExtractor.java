@@ -1,6 +1,6 @@
-package qwatch.logs;
+package qwatch.logs.util;
 
-import io.vavr.collection.List;
+import io.vavr.collection.Traversable;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import qwatch.logs.model.LogEntry;
@@ -11,21 +11,23 @@ import qwatch.logs.model.LogEntry;
  */
 public class SummaryExtractor {
 
-  private final List<LogEntry> logEntries;
+  private final Traversable<LogEntry> logEntries;
 
-  public SummaryExtractor(List<LogEntry> logEntries) {
+  public SummaryExtractor(Traversable<LogEntry> logEntries) {
     this.logEntries = logEntries;
   }
 
   public String top(int n) {
-    return logEntries
-        .groupBy(e -> abbr(e.message()))
-        .bimap(Function.identity(), List::size)
-        .toStream()
-        .sortBy(t -> t._2 * -1)
-        .take(n)
-        .map(t -> "- " + t._2 + ": " + t._1)
-        .collect(Collectors.joining("\n"));
+    String list =
+        logEntries
+            .groupBy(e -> abbr(e.message()))
+            .bimap(Function.identity(), Traversable::size)
+            .toStream()
+            .sortBy(t -> t._2 * -1)
+            .take(n)
+            .map(t -> "- " + t._2 + ": " + t._1)
+            .collect(Collectors.joining("\n"));
+    return "Top " + n + " errors:\n" + list;
   }
 
   String abbr(String message) {
