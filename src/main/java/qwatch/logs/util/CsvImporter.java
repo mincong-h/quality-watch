@@ -1,6 +1,8 @@
 package qwatch.logs.util;
 
+import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
+import io.vavr.collection.Map;
 import io.vavr.control.Either;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,6 +23,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class CsvImporter {
 
+  private static final String COL_DATE = "date";
+  private static final String COL_HOST = "Host";
+  private static final String COL_MESSAGE = "message";
+  private static final String COL_SERVICE = "Service";
+  private static final String COL_STATUS = "Status";
+  private static final String[] REQUIRED_COLUMNS = {COL_DATE, COL_HOST, COL_MESSAGE, COL_SERVICE};
+
   public static Either<String, List<LogEntry>> importLogEntries(Path logPath) {
     String content;
     try {
@@ -29,18 +38,24 @@ public class CsvImporter {
       String message = "Failed to read logs from filepath: " + logPath;
       return Either.left(message);
     }
-    Either<String, List<String[]>> parsed = internalParseCsv(content, 4);
+    Either<String, List<String[]>> parsed = internalParseCsv(content);
     if (parsed.isLeft()) {
       return Either.left(parsed.getLeft());
     }
     java.util.List<LogEntry> entries = new ArrayList<>();
     java.util.List<String> failures = new ArrayList<>();
     boolean isHeader = true;
+    Map<String, Integer> columnMapping = HashMap.empty();
     for (String[] row : parsed.get()) {
       if (isHeader) {
+        Either<String, Map<String, Integer>> m = toHeaderMapping(row);
+        if (m.isLeft()) {
+          return Either.left(m.getLeft());
+        }
+        columnMapping = m.get();
         isHeader = false;
       } else {
-        toLogEntry(row).peek(entries::add).peekLeft(failures::add);
+        toLogEntry(row, columnMapping).peek(entries::add).peekLeft(failures::add);
       }
     }
     if (failures.isEmpty()) {
@@ -54,29 +69,63 @@ public class CsvImporter {
    * Parse a row to {@link LogEntry}.
    *
    * @param columns row to parse
+   * @param index column name-index mapping (key: column name, value: column index)
    * @return either a LogEntry or a failure
    */
-  private static Either<String, LogEntry> toLogEntry(String[] columns) {
-    String dateStr = columns[0];
-    String service = columns[1];
-    String status = columns[2];
-    String message = columns[3];
+  private static Either<String, LogEntry> toLogEntry(String[] columns, Map<String, Integer> index) {
+    String dateStr = columns[index.get(COL_DATE).get()];
+    String service = columns[index.get(COL_SERVICE).get()];
+    String message = columns[index.get(COL_MESSAGE).get()];
+    String host = columns[index.get(COL_HOST).get()];
+    String status;
     ZonedDateTime d;
+
+    // fill fields
+    if (index.containsKey(COL_STATUS)) {
+      status = columns[index.get(COL_STATUS).get()];
+    } else {
+      status = "error";
+    }
     try {
       d = ZonedDateTime.parse(dateStr).withZoneSameLocal(ZoneId.of("UTC"));
     } catch (DateTimeParseException e) {
       return Either.left("Unable to parse date: " + dateStr);
     }
-    return Either.right(
-        LogEntry.newBuilder().dateTime(d).service(service).status(status).message(message).build());
+
+    // build
+    LogEntry entry =
+        LogEntry.newBuilder()
+            .dateTime(d)
+            .host(host)
+            .service(service)
+            .status(status)
+            .message(message)
+            .build();
+    return Either.right(entry);
+  }
+
+  static Either<String, Map<String, Integer>> toHeaderMapping(String[] columns) {
+    Map<String, Integer> mapping = HashMap.empty();
+    for (int i = 0; i < columns.length; i++) {
+      mapping = mapping.put(columns[i], i);
+    }
+    for (String c : REQUIRED_COLUMNS) {
+      if (!mapping.containsKey(c)) {
+        return Either.left("Missing required column: " + c + " in CSV");
+      }
+    }
+    return Either.right(mapping);
   }
 
   /**
+   * Parses CSV content into a list of rows.
+   *
+   * <p>This method assumes that the header is present in the first line of the content.
+   *
    * @param content the CSV content to parse
-   * @param cols number of columns
    * @return either a list of rows or a failure
    */
-  static Either<String, List<String[]>> internalParseCsv(String content, int cols) {
+  static Either<String, List<String[]>> internalParseCsv(String content) {
     char sep = ',';
     char qualifier = '"';
     char newline1 = '\n';
@@ -84,6 +133,15 @@ public class CsvImporter {
 
     java.util.List<String[]> rows = new ArrayList<>();
     char[] arr = content.toCharArray();
+    int cols = 1;
+
+    // Header
+    for (int i = 0; arr[i] != newline1 && arr[i] != newline2; i++) {
+      if (arr[i] == sep) {
+        cols++;
+      }
+    }
+
     String[] row = new String[cols];
     int columnIdx = 0;
     int i = 0;

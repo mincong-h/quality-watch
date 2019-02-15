@@ -18,6 +18,7 @@ public abstract class LogEntry { // NOSONAR: AutoValue
 
   public static final Comparator<LogEntry> BY_DATE =
       Comparator.comparing(LogEntry::dateTime)
+          .thenComparing(LogEntry::host)
           .thenComparing(LogEntry::message)
           .thenComparing(LogEntry::service)
           .thenComparing(LogEntry::status);
@@ -29,6 +30,10 @@ public abstract class LogEntry { // NOSONAR: AutoValue
   /** Column: "date" */
   @JsonProperty("date")
   public abstract ZonedDateTime dateTime();
+
+  /** Column: "Host" */
+  @JsonProperty("host")
+  public abstract String host();
 
   /** Column: "Service" */
   @JsonProperty("service")
@@ -48,6 +53,9 @@ public abstract class LogEntry { // NOSONAR: AutoValue
   public abstract static class Builder { // NOSONAR: AutoValue
     @JsonProperty("date")
     public abstract Builder dateTime(ZonedDateTime dateTime);
+
+    @JsonProperty("host")
+    public abstract Builder host(String host);
 
     @JsonProperty("service")
     public abstract Builder service(String service);

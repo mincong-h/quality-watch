@@ -30,9 +30,9 @@ public class CsvImporterTest {
   public void setUp() throws Exception {
     logPath = tempDir.newFile().toPath();
     List<String> linesF1 = new ArrayList<>();
-    linesF1.add("date,Service,Status,message");
-    linesF1.add("2019-02-11T12:13:57.916Z,nos-15,error,Project foo not found.");
-    linesF1.add("2019-02-11T12:13:57.917Z,nos-15,error,\"First line");
+    linesF1.add("date,Host,Service,Status,message");
+    linesF1.add("2019-02-11T12:13:57.916Z,foo,nos-15,error,Project foo not found.");
+    linesF1.add("2019-02-11T12:13:57.917Z,foo,nos-15,error,\"First line");
     linesF1.add("another line\"");
     Files.write(logPath, linesF1);
   }
@@ -49,6 +49,7 @@ public class CsvImporterTest {
     LogEntry expectedEntry1 =
         LogEntry.newBuilder()
             .dateTime(LocalDateTime.of(2019, 2, 11, 12, 13, 57, 916_000_000).atZone(UTC))
+            .host("foo")
             .service("nos-15")
             .status("error")
             .message("Project foo not found.")
@@ -56,6 +57,7 @@ public class CsvImporterTest {
     LogEntry expectedEntry2 =
         LogEntry.newBuilder()
             .dateTime(LocalDateTime.of(2019, 2, 11, 12, 13, 57, 917_000_000).atZone(UTC))
+            .host("foo")
             .service("nos-15")
             .status("error")
             .message("First line\nanother line")
@@ -65,18 +67,18 @@ public class CsvImporterTest {
 
   @Test
   public void internalParseCsv() {
-    List<String[]> rows = CsvImporter.internalParseCsv("A,B,C\na,b,c", 3).get().toJavaList();
+    List<String[]> rows = CsvImporter.internalParseCsv("A,B,C\na,b,c").get().toJavaList();
     assertThat(rows)
         .hasSize(2)
         .containsExactly(new String[] {"A", "B", "C"}, new String[] {"a", "b", "c"});
 
     List<String[]> rows2 =
-        CsvImporter.internalParseCsv("A,B,C\na,b,\"c1\"\"c2\"", 3).get().toJavaList();
+        CsvImporter.internalParseCsv("A,B,C\na,b,\"c1\"\"c2\"").get().toJavaList();
     assertThat(rows2)
         .hasSize(2)
         .containsExactly(new String[] {"A", "B", "C"}, new String[] {"a", "b", "c1\"c2"});
 
-    List<String[]> rows3 = CsvImporter.internalParseCsv("a,b,\"c1\nc2\"", 3).get().toJavaList();
+    List<String[]> rows3 = CsvImporter.internalParseCsv("a,b,\"c1\nc2\"").get().toJavaList();
     assertThat(rows3).hasSize(1).containsExactly(new String[] {"a", "b", "c1\nc2"});
   }
 }
