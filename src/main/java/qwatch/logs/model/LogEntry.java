@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
+import qwatch.logs.util.LogPatterns;
 
 /**
  * Log Entry is an log event in a log file.
@@ -47,7 +48,12 @@ public abstract class LogEntry { // NOSONAR: AutoValue
   @JsonProperty("message")
   public abstract String message();
 
-  public abstract Builder toBuilder();
+  /**
+   * Gets summary of the full message.
+   *
+   * @return a single line summary
+   */
+  public abstract String summary();
 
   @AutoValue.Builder
   public abstract static class Builder { // NOSONAR: AutoValue
@@ -66,6 +72,16 @@ public abstract class LogEntry { // NOSONAR: AutoValue
     @JsonProperty("message")
     public abstract Builder message(String message);
 
-    public abstract LogEntry build();
+    public abstract Builder summary(String summary);
+
+    abstract String message();
+
+    abstract LogEntry autoBuild();
+
+    public LogEntry build() {
+      String summary = LogPatterns.createSummary(message());
+      summary(summary);
+      return autoBuild();
+    }
   }
 }

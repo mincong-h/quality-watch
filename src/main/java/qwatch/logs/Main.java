@@ -26,7 +26,7 @@ public class Main {
     } else if (StatsCommand.NAME.equals(command)) {
       StatsCommand.newBuilder() //
           .logDir(Paths.get("/Users/mincong/datadog"))
-          .topN(10)
+          .topN(100)
           .build()
           .execute();
     } else {
