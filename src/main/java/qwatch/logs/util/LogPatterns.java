@@ -18,8 +18,6 @@ public class LogPatterns {
       Pattern.compile("^Could not verify if early access is enabled for project (.*)$");
   static final Pattern P_FAILED_TO_PARSE_REGISTRY =
       Pattern.compile("^Failed to parse registry from (.*)$");
-  static final Pattern P_INVALID_REF_NAME =
-      Pattern.compile("^(.*)JGitInternalException: Invalid ref name(.*)$");
   static final Pattern P_IO_EXCEPTION_ON_REQ_URL =
       Pattern.compile("^java.io.IOException: On requestURL:(.*)$");
   static final Pattern P_NO_SUCH_PROJECT = Pattern.compile("^No such project (.*)$");
@@ -27,10 +25,20 @@ public class LogPatterns {
       Pattern.compile("^The version file should be created for the branch (.*)$");
   static final Pattern P_SSO_AUTH_FAILED =
       Pattern.compile("^Authentication has failed. Credentials may be incorrect (.*)");
-  static final Pattern P_JGIT_PACK_FILE =
-      Pattern.compile("^(.*)Exception caught while accessing pack file (.*)$");
   static final Pattern P_UNHANDLED_ERROR =
       Pattern.compile("^(.*)Unhandled error was caught by the Filter$");
+  static final Pattern P_FEATURE_VALIDATION_FAILED =
+      Pattern.compile("^Validation failed for feature '(.*)'$");
+  static final Pattern P_ERR_CREATING_MANAGED_CONNECTION =
+      Pattern.compile("^Error occurred creating ManagedConnection for handle: (.*)$");
+
+  /* ----- JGit ----- */
+  static final Pattern P_INVALID_REF_NAME =
+      Pattern.compile("^(.*)JGitInternalException: Invalid ref name(.*)$");
+  static final Pattern P_INTERNAL_ERR_RECEIVE_PACK =
+      Pattern.compile("^Internal error during receive-pack to (.*)$");
+  static final Pattern P_JGIT_PACK_FILE =
+      Pattern.compile("^(.*)Exception caught while accessing pack file (.*)$");
 
   private static final List<Tuple2<String, Pattern>> PATTERNS;
 
@@ -50,9 +58,6 @@ public class LogPatterns {
     s = "Failed to parse registry from ${json}";
     list = list.append(Tuple.of(s, P_FAILED_TO_PARSE_REGISTRY));
 
-    s = "JGitInternalException: Invalid ref name: ${ref}";
-    list = list.append(Tuple.of(s, P_INVALID_REF_NAME));
-
     s = "java.io.IOException: On requestURL: ${url}";
     list = list.append(Tuple.of(s, P_IO_EXCEPTION_ON_REQ_URL));
 
@@ -65,11 +70,23 @@ public class LogPatterns {
     s = "Authentication has failed. Credentials may be incorrect ...";
     list = list.append(Tuple.of(s, P_SSO_AUTH_FAILED));
 
-    s = "Exception caught while accessing pack file ${pack}";
-    list = list.append(Tuple.of(s, P_JGIT_PACK_FILE));
-
     s = "Unhandled error was caught by the Filter";
     list = list.append(Tuple.of(s, P_UNHANDLED_ERROR));
+
+    s = "Validation failed for feature ${id}";
+    list = list.append(Tuple.of(s, P_FEATURE_VALIDATION_FAILED));
+
+    s = "Error occurred creating ManagedConnection for handle: ${info}";
+    list = list.append(Tuple.of(s, P_ERR_CREATING_MANAGED_CONNECTION));
+
+    // JGit
+    s = "JGitInternalException: Invalid ref name: ${ref}";
+    list = list.append(Tuple.of(s, P_INVALID_REF_NAME));
+    s = "Exception caught while accessing pack file ${pack}";
+    list = list.append(Tuple.of(s, P_JGIT_PACK_FILE));
+    s = "Internal error during receive-pack to ${gitPath}";
+    list = list.append(Tuple.of(s, P_INTERNAL_ERR_RECEIVE_PACK));
+
     PATTERNS = list;
   }
 
