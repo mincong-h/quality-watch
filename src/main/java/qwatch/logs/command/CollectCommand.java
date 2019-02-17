@@ -77,7 +77,8 @@ public class CollectCommand implements Command<Try<Void>> {
       for (Path csv : stream) {
         Either<String, List<LogEntry>> result = CsvImporter.importLogEntries(csv);
         if (result.isRight()) {
-          logger.info("{}: {} entries", csv, result.get().size());
+          String size = String.format("%,d", result.get().size());
+          logger.info("{}: {} entries", csv, size);
         } else {
           logger.warn("{}: failed\n{}", csv, result.getLeft());
         }
