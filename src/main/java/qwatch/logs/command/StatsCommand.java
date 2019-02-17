@@ -69,7 +69,8 @@ public class StatsCommand implements Command<Void> {
   @Override
   public Void execute() {
     Set<LogEntry> entries = JsonImportUtil.importLogEntries(logDir);
-    logger.info("{} entries extracted.", entries.size());
+    String size = String.format("%,d", entries.size());
+    logger.info("{} entries extracted.", size);
 
     String summary = new SummaryExtractor(entries).top(topN);
     logger.info("{}", summary);
