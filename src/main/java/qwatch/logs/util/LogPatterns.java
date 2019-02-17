@@ -31,14 +31,25 @@ public class LogPatterns {
       Pattern.compile("^Validation failed for feature '(.*)'$");
   static final Pattern P_ERR_CREATING_MANAGED_CONNECTION =
       Pattern.compile("^Error occurred creating ManagedConnection for handle: (.*)$");
+  static final Pattern P_SERVICE_TICKET_MISMATCHED =
+      Pattern.compile(
+          "^Service ticket \\[(.*)] with service \\[(.*)] does not match supplied service \\[(.*)]$");
 
   /* ----- JGit ----- */
   static final Pattern P_INVALID_REF_NAME =
       Pattern.compile("^(.*)JGitInternalException: Invalid ref name(.*)$");
   static final Pattern P_INTERNAL_ERR_RECEIVE_PACK =
       Pattern.compile("^Internal error during receive-pack to (.*)$");
+  static final Pattern P_INTERNAL_ERR_UPLOAD_PACK =
+      Pattern.compile("^Internal error during upload-pack from (.*)$");
   static final Pattern P_JGIT_PACK_FILE =
       Pattern.compile("^(.*)Exception caught while accessing pack file (.*)$");
+  static final Pattern P_FAILED_TO_CLONE_REPO =
+      Pattern.compile("^Failed to clone remote repository for project: (.*)$");
+
+  /* ----- Marketplace ----- */
+  static final Pattern P_MKP_LOGIN_SERVICE_NOT_FOUND_FOR_PKG =
+      Pattern.compile("^Service @login not found for object: (.*) of type pkg$");
 
   private static final List<Tuple2<String, Pattern>> PATTERNS;
 
@@ -79,6 +90,10 @@ public class LogPatterns {
     s = "Error occurred creating ManagedConnection for handle: ${info}";
     list = list.append(Tuple.of(s, P_ERR_CREATING_MANAGED_CONNECTION));
 
+    s =
+        "Service ticket [${ticket}] with service [${service}] does not match supplied service [${suppliedService}]";
+    list = list.append(Tuple.of(s, P_SERVICE_TICKET_MISMATCHED));
+
     // JGit
     s = "JGitInternalException: Invalid ref name: ${ref}";
     list = list.append(Tuple.of(s, P_INVALID_REF_NAME));
@@ -86,6 +101,14 @@ public class LogPatterns {
     list = list.append(Tuple.of(s, P_JGIT_PACK_FILE));
     s = "Internal error during receive-pack to ${gitPath}";
     list = list.append(Tuple.of(s, P_INTERNAL_ERR_RECEIVE_PACK));
+    s = "Internal error during upload-pack from ${gitPath}";
+    list = list.append(Tuple.of(s, P_INTERNAL_ERR_UPLOAD_PACK));
+    s = "Failed to clone remote repository for project: ${id}";
+    list = list.append(Tuple.of(s, P_FAILED_TO_CLONE_REPO));
+
+    // Marketplace
+    s = "Service @login not found for object: ${pkgPath} of type pkg";
+    list = list.append(Tuple.of(s, P_MKP_LOGIN_SERVICE_NOT_FOUND_FOR_PKG));
 
     PATTERNS = list;
   }
