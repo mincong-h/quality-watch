@@ -94,4 +94,11 @@ public class LogPatternsTest {
     s = "Couldn't find StudioProject for ConnectProject with id foo";
     assertThat(P_STUDIO_PROJECT_NOT_FOUND_FOR_CONNECT.matcher(s).matches()).isTrue();
   }
+
+  @Test
+  public void head() {
+    assertThat(LogPatterns.head("1\n2")).isEqualTo("1");
+    assertThat(LogPatterns.head("1\r2")).isEqualTo("1");
+    assertThat(LogPatterns.head("1\r\n2")).isEqualTo("1");
+  }
 }
