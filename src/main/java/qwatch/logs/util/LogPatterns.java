@@ -177,6 +177,14 @@ public class LogPatterns {
           .pattern(Pattern.compile("^Failed to resetOnHead: (.*)$"))
           .build();
 
+  static final LogPattern FAILED_INIT_PROJECT =
+      LogPattern.newBuilder()
+          .id(21)
+          .shortMsg("Failed to initialize project")
+          .longMsg("Failed to initialize project ${projectId}")
+          .pattern(Pattern.compile("^Failed to initialize project (.*)$"))
+          .build();
+
   private static final Set<LogPattern> PATTERNS =
       HashSet.of(PROJECT_NOT_FOUND)
           .add(RESPONSE_COMMITTED)
@@ -197,7 +205,8 @@ public class LogPatterns {
           .add(JGIT_PACK_FILE)
           .add(FAILED_TO_CLONE_REPO)
           .add(LOGIN_SERVICE_NOT_FOUND)
-          .add(RESET_ON_HEAD_FAILED);
+          .add(RESET_ON_HEAD_FAILED)
+          .add(FAILED_INIT_PROJECT);
 
   /**
    * Creates an abbreviation for a full message.

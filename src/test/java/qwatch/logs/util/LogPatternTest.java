@@ -5,6 +5,7 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static qwatch.logs.util.LogPatterns.CANNOT_VERIFY_EA;
 import static qwatch.logs.util.LogPatterns.ERR_CREATING_MANAGED_CONNECTION;
+import static qwatch.logs.util.LogPatterns.FAILED_INIT_PROJECT;
 import static qwatch.logs.util.LogPatterns.FAILED_TO_CLONE_REPO;
 import static qwatch.logs.util.LogPatterns.FAILED_TO_PARSE_REGISTRY;
 import static qwatch.logs.util.LogPatterns.FEATURE_VALIDATION_FAILED;
@@ -99,5 +100,8 @@ public class LogPatternTest {
 
     s = "Failed to resetOnHead: /path/to/project.git";
     assertThat(RESET_ON_HEAD_FAILED.matches(s)).isTrue();
+
+    s = "Failed to initialize project foo";
+    assertThat(FAILED_INIT_PROJECT.matches(s)).isTrue();
   }
 }
