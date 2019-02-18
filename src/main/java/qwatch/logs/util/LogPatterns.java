@@ -169,7 +169,26 @@ public class LogPatterns {
           .pattern(Pattern.compile("^Service @login not found for object: (.*) of type pkg$"))
           .build();
 
-  private static final Set<LogPattern> PATTERNS = HashSet.of(PROJECT_NOT_FOUND);
+  private static final Set<LogPattern> PATTERNS =
+      HashSet.of(PROJECT_NOT_FOUND)
+          .add(RESPONSE_COMMITTED)
+          .add(CANNOT_VERIFY_EA)
+          .add(FAILED_TO_PARSE_REGISTRY)
+          .add(IO_EXCEPTION_ON_REQ_URL)
+          .add(NO_SUCH_PROJECT)
+          .add(INCORRECT_VERSION_FILE)
+          .add(SSO_AUTH_FAILED)
+          .add(UNHANDLED_ERROR)
+          .add(FEATURE_VALIDATION_FAILED)
+          .add(ERR_CREATING_MANAGED_CONNECTION)
+          .add(SERVICE_TICKET_MISMATCHED)
+          .add(STUDIO_PROJECT_NOT_FOUND_FOR_CONNECT)
+          .add(INVALID_REF_NAME)
+          .add(INTERNAL_ERR_RECEIVE_PACK)
+          .add(INTERNAL_ERR_UPLOAD_PACK)
+          .add(JGIT_PACK_FILE)
+          .add(FAILED_TO_CLONE_REPO)
+          .add(LOGIN_SERVICE_NOT_FOUND);
 
   /**
    * Creates an abbreviation for a full message.
