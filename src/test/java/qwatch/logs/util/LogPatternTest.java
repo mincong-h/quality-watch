@@ -3,6 +3,7 @@ package qwatch.logs.util;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static qwatch.logs.util.LogPatterns.CANNOT_FORWARD_TO_ERR_PAGE;
 import static qwatch.logs.util.LogPatterns.CANNOT_VERIFY_EA;
 import static qwatch.logs.util.LogPatterns.ERR_CREATING_MANAGED_CONNECTION;
 import static qwatch.logs.util.LogPatterns.FAILED_INIT_PROJECT;
@@ -67,7 +68,8 @@ public class LogPatternTest {
 
     s = "ERROR: Exception caught while accessing pack file xxx";
     assertThat(JGIT_PACK_FILE.matches(s)).isTrue();
-    s = "ERROR: Exception caught while accessing pack file /efs/studio_git_repos/vdutat-sandbox-710-nuxeo.git/objects/pack/pack-b0cd96843feb2f483322d84c600d7be4e1c95609.pack, the pack file might be corrupt, {1}. Caught {2} consecutive errors while trying to read this pack.";
+    s =
+        "ERROR: Exception caught while accessing pack file /efs/studio_git_repos/vdutat-sandbox-710-nuxeo.git/objects/pack/pack-b0cd96843feb2f483322d84c600d7be4e1c95609.pack, the pack file might be corrupt, {1}. Caught {2} consecutive errors while trying to read this pack.";
     assertThat(JGIT_PACK_FILE.matches(s)).isTrue();
 
     s =
@@ -107,5 +109,9 @@ public class LogPatternTest {
 
     s = "Unable to get registries for package foo";
     assertThat(UNABLE_GET_REGISTRY.matches(s)).isTrue();
+
+    s =
+        "Cannot forward to error page for request [/login] as the response has already been committed.";
+    assertThat(CANNOT_FORWARD_TO_ERR_PAGE.matches(s)).isTrue();
   }
 }

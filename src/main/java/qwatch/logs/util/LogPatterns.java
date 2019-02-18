@@ -193,6 +193,14 @@ public class LogPatterns {
           .pattern(Pattern.compile("^Unable to get registries for (.*)$"))
           .build();
 
+  static final LogPattern CANNOT_FORWARD_TO_ERR_PAGE =
+      LogPattern.newBuilder()
+          .id(23)
+          .shortMsg("Cannot forward to error page for request")
+          .longMsg("Cannot forward to error page for request ${path} as the response has already been committed.")
+          .pattern(Pattern.compile("Cannot forward to error page for request (.*) as the response has already been committed.(.*)"))
+          .build();
+
   private static final Set<LogPattern> PATTERNS =
       HashSet.of(PROJECT_NOT_FOUND)
           .add(RESPONSE_COMMITTED)
