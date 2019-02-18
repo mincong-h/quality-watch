@@ -20,6 +20,7 @@ import static qwatch.logs.util.LogPatterns.P_PROJECT_NOT_FOUND;
 import static qwatch.logs.util.LogPatterns.P_RESPONSE_COMMITTED;
 import static qwatch.logs.util.LogPatterns.P_SERVICE_TICKET_MISMATCHED;
 import static qwatch.logs.util.LogPatterns.P_SSO_AUTH_FAILED;
+import static qwatch.logs.util.LogPatterns.P_STUDIO_PROJECT_NOT_FOUND_FOR_CONNECT;
 import static qwatch.logs.util.LogPatterns.P_UNHANDLED_ERROR;
 
 /**
@@ -89,5 +90,8 @@ public class LogPatternsTest {
 
     s = "Service @login not found for object: /path/to/package of type pkg";
     assertThat(P_MKP_LOGIN_SERVICE_NOT_FOUND_FOR_PKG.matcher(s).matches()).isTrue();
+
+    s = "Couldn't find StudioProject for ConnectProject with id foo";
+    assertThat(P_STUDIO_PROJECT_NOT_FOUND_FOR_CONNECT.matcher(s).matches()).isTrue();
   }
 }

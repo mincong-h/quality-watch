@@ -34,6 +34,8 @@ public class LogPatterns {
   static final Pattern P_SERVICE_TICKET_MISMATCHED =
       Pattern.compile(
           "^Service ticket \\[(.*)] with service \\[(.*)] does not match supplied service \\[(.*)]$");
+  static final Pattern P_STUDIO_PROJECT_NOT_FOUND_FOR_CONNECT =
+      Pattern.compile("^Couldn't find StudioProject for ConnectProject with id (.*)$");
 
   /* ----- JGit ----- */
   static final Pattern P_INVALID_REF_NAME =
@@ -93,6 +95,9 @@ public class LogPatterns {
     s =
         "Service ticket [${ticket}] with service [${service}] does not match supplied service [${suppliedService}]";
     list = list.append(Tuple.of(s, P_SERVICE_TICKET_MISMATCHED));
+
+    s = "Couldn't find StudioProject for ConnectProject with id ${projectId}";
+    list = list.append(Tuple.of(s, P_STUDIO_PROJECT_NOT_FOUND_FOR_CONNECT));
 
     // JGit
     s = "JGitInternalException: Invalid ref name: ${ref}";
