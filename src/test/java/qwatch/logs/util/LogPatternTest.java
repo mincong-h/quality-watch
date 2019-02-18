@@ -17,6 +17,7 @@ import static qwatch.logs.util.LogPatterns.JGIT_PACK_FILE;
 import static qwatch.logs.util.LogPatterns.LOGIN_SERVICE_NOT_FOUND;
 import static qwatch.logs.util.LogPatterns.NO_SUCH_PROJECT;
 import static qwatch.logs.util.LogPatterns.PROJECT_NOT_FOUND;
+import static qwatch.logs.util.LogPatterns.RESET_ON_HEAD_FAILED;
 import static qwatch.logs.util.LogPatterns.RESPONSE_COMMITTED;
 import static qwatch.logs.util.LogPatterns.SERVICE_TICKET_MISMATCHED;
 import static qwatch.logs.util.LogPatterns.SSO_AUTH_FAILED;
@@ -95,5 +96,8 @@ public class LogPatternTest {
 
     s = "Couldn't find StudioProject for ConnectProject with id foo";
     assertThat(STUDIO_PROJECT_NOT_FOUND_FOR_CONNECT.matches(s)).isTrue();
+
+    s = "Failed to resetOnHead: /path/to/project.git";
+    assertThat(RESET_ON_HEAD_FAILED.matches(s)).isTrue();
   }
 }

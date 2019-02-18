@@ -169,6 +169,14 @@ public class LogPatterns {
           .pattern(Pattern.compile("^Service @login not found for object: (.*) of type pkg$"))
           .build();
 
+  static final LogPattern RESET_ON_HEAD_FAILED =
+      LogPattern.newBuilder()
+          .id(20)
+          .shortMsg("ResetOnHead failed")
+          .longMsg("Failed to resetOnHead: ${gitPath}")
+          .pattern(Pattern.compile("^Failed to resetOnHead: (.*)$"))
+          .build();
+
   private static final Set<LogPattern> PATTERNS =
       HashSet.of(PROJECT_NOT_FOUND)
           .add(RESPONSE_COMMITTED)
@@ -188,7 +196,8 @@ public class LogPatterns {
           .add(INTERNAL_ERR_UPLOAD_PACK)
           .add(JGIT_PACK_FILE)
           .add(FAILED_TO_CLONE_REPO)
-          .add(LOGIN_SERVICE_NOT_FOUND);
+          .add(LOGIN_SERVICE_NOT_FOUND)
+          .add(RESET_ON_HEAD_FAILED);
 
   /**
    * Creates an abbreviation for a full message.
