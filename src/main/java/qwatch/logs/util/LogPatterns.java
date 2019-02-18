@@ -185,6 +185,14 @@ public class LogPatterns {
           .pattern(Pattern.compile("^Failed to initialize project (.*)$"))
           .build();
 
+  static final LogPattern UNABLE_GET_REGISTRY =
+      LogPattern.newBuilder()
+          .id(22)
+          .shortMsg("Unable to get registries")
+          .longMsg("Unable to get registries for package/platform ${id}")
+          .pattern(Pattern.compile("^Unable to get registries for (.*)$"))
+          .build();
+
   private static final Set<LogPattern> PATTERNS =
       HashSet.of(PROJECT_NOT_FOUND)
           .add(RESPONSE_COMMITTED)
@@ -206,7 +214,8 @@ public class LogPatterns {
           .add(FAILED_TO_CLONE_REPO)
           .add(LOGIN_SERVICE_NOT_FOUND)
           .add(RESET_ON_HEAD_FAILED)
-          .add(FAILED_INIT_PROJECT);
+          .add(FAILED_INIT_PROJECT)
+          .add(UNABLE_GET_REGISTRY);
 
   /**
    * Creates an abbreviation for a full message.

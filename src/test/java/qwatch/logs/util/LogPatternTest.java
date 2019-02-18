@@ -23,6 +23,7 @@ import static qwatch.logs.util.LogPatterns.RESPONSE_COMMITTED;
 import static qwatch.logs.util.LogPatterns.SERVICE_TICKET_MISMATCHED;
 import static qwatch.logs.util.LogPatterns.SSO_AUTH_FAILED;
 import static qwatch.logs.util.LogPatterns.STUDIO_PROJECT_NOT_FOUND_FOR_CONNECT;
+import static qwatch.logs.util.LogPatterns.UNABLE_GET_REGISTRY;
 import static qwatch.logs.util.LogPatterns.UNHANDLED_ERROR;
 
 /**
@@ -103,5 +104,8 @@ public class LogPatternTest {
 
     s = "Failed to initialize project foo";
     assertThat(FAILED_INIT_PROJECT.matches(s)).isTrue();
+
+    s = "Unable to get registries for package foo";
+    assertThat(UNABLE_GET_REGISTRY.matches(s)).isTrue();
   }
 }
