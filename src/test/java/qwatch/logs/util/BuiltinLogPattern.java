@@ -3,38 +3,38 @@ package qwatch.logs.util;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static qwatch.logs.util.LogPatterns.CANNOT_FORWARD_TO_ERR_PAGE;
-import static qwatch.logs.util.LogPatterns.CANNOT_VERIFY_EA;
-import static qwatch.logs.util.LogPatterns.ERR_CREATING_MANAGED_CONNECTION;
-import static qwatch.logs.util.LogPatterns.FAILED_INIT_PROJECT;
-import static qwatch.logs.util.LogPatterns.FAILED_TO_CLONE_REPO;
-import static qwatch.logs.util.LogPatterns.FAILED_TO_PARSE_REGISTRY;
-import static qwatch.logs.util.LogPatterns.FEATURE_VALIDATION_FAILED;
-import static qwatch.logs.util.LogPatterns.INCORRECT_VERSION_FILE;
-import static qwatch.logs.util.LogPatterns.INTERNAL_ERR_RECEIVE_PACK;
-import static qwatch.logs.util.LogPatterns.INTERNAL_ERR_UPLOAD_PACK;
-import static qwatch.logs.util.LogPatterns.INVALID_REF_NAME;
-import static qwatch.logs.util.LogPatterns.IO_EXCEPTION_ON_REQ_URL;
-import static qwatch.logs.util.LogPatterns.JGIT_PACK_FILE;
-import static qwatch.logs.util.LogPatterns.LOGIN_SERVICE_NOT_FOUND;
-import static qwatch.logs.util.LogPatterns.NO_SUCH_PROJECT;
-import static qwatch.logs.util.LogPatterns.PROJECT_NOT_FOUND;
-import static qwatch.logs.util.LogPatterns.RESET_ON_HEAD_FAILED;
-import static qwatch.logs.util.LogPatterns.RESPONSE_COMMITTED;
-import static qwatch.logs.util.LogPatterns.SERVICE_TICKET_MISMATCHED;
-import static qwatch.logs.util.LogPatterns.SSO_AUTH_FAILED;
-import static qwatch.logs.util.LogPatterns.STUDIO_PROJECT_NOT_FOUND_FOR_CONNECT;
-import static qwatch.logs.util.LogPatterns.UNABLE_GET_REGISTRY;
-import static qwatch.logs.util.LogPatterns.UNHANDLED_ERROR;
+import static qwatch.logs.model.BuiltinLogPattern.CANNOT_FORWARD_TO_ERR_PAGE;
+import static qwatch.logs.model.BuiltinLogPattern.CANNOT_VERIFY_EA;
+import static qwatch.logs.model.BuiltinLogPattern.ERR_CREATING_MANAGED_CONNECTION;
+import static qwatch.logs.model.BuiltinLogPattern.FAILED_INIT_PROJECT;
+import static qwatch.logs.model.BuiltinLogPattern.FAILED_TO_CLONE_REPO;
+import static qwatch.logs.model.BuiltinLogPattern.FAILED_TO_PARSE_REGISTRY;
+import static qwatch.logs.model.BuiltinLogPattern.FEATURE_VALIDATION_FAILED;
+import static qwatch.logs.model.BuiltinLogPattern.INCORRECT_VERSION_FILE;
+import static qwatch.logs.model.BuiltinLogPattern.INTERNAL_ERR_RECEIVE_PACK;
+import static qwatch.logs.model.BuiltinLogPattern.INTERNAL_ERR_UPLOAD_PACK;
+import static qwatch.logs.model.BuiltinLogPattern.INVALID_REF_NAME;
+import static qwatch.logs.model.BuiltinLogPattern.IO_EXCEPTION_ON_REQ_URL;
+import static qwatch.logs.model.BuiltinLogPattern.JGIT_PACK_FILE;
+import static qwatch.logs.model.BuiltinLogPattern.LOGIN_SERVICE_NOT_FOUND;
+import static qwatch.logs.model.BuiltinLogPattern.NO_SUCH_PROJECT;
+import static qwatch.logs.model.BuiltinLogPattern.PROJECT_NOT_FOUND;
+import static qwatch.logs.model.BuiltinLogPattern.RESET_ON_HEAD_FAILED;
+import static qwatch.logs.model.BuiltinLogPattern.RESPONSE_COMMITTED;
+import static qwatch.logs.model.BuiltinLogPattern.SERVICE_TICKET_MISMATCHED;
+import static qwatch.logs.model.BuiltinLogPattern.SSO_AUTH_FAILED;
+import static qwatch.logs.model.BuiltinLogPattern.STUDIO_PROJECT_NOT_FOUND_FOR_CONNECT;
+import static qwatch.logs.model.BuiltinLogPattern.UNABLE_GET_REGISTRY;
+import static qwatch.logs.model.BuiltinLogPattern.UNHANDLED_ERROR;
 
 /**
  * @author Mincong Huang
  * @since 1.0
  */
-public class LogPatternTest {
+public class BuiltinLogPattern {
 
   @Test
-  public void patterns() {
+  public void values() {
     String s;
     assertThat(PROJECT_NOT_FOUND.matches("Project foo not found.")).isTrue();
     assertThat(PROJECT_NOT_FOUND.matches("Project foo-bar not found.")).isTrue();
