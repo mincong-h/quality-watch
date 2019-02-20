@@ -1,7 +1,10 @@
 package qwatch.logs.command;
 
 import io.vavr.collection.Set;
+import io.vavr.collection.SortedSet;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.logs.model.LogEntry;
@@ -70,7 +73,15 @@ public class StatsCommand implements Command<Void> {
   public Void execute() {
     Set<LogEntry> entries = JsonImportUtil.importLogEntries(logDir);
     String size = String.format("%,d", entries.size());
-    logger.info("{} entries extracted.", size);
+    if (entries.nonEmpty()) {
+      SortedSet<LocalDate> dates =
+          entries.map(LogEntry::dateTime).map(ZonedDateTime::toLocalDate).toSortedSet();
+      LocalDate start = dates.head();
+      LocalDate end = dates.last();
+      logger.info("{} entries extracted ({} to {}).", size, start, end);
+    } else {
+      logger.info("{} entries extracted.", size);
+    }
 
     String summary = new SummaryExtractor(entries).top(topN);
     logger.info("{}", summary);
