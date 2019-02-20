@@ -1,5 +1,6 @@
 package qwatch.logs.util;
 
+import io.vavr.control.Option;
 import qwatch.logs.model.BuiltinLogPattern;
 import qwatch.logs.model.LogPattern;
 
@@ -10,22 +11,22 @@ import qwatch.logs.model.LogPattern;
 public class LogPatterns {
 
   /**
-   * Creates an abbreviation for a full message.
+   * Finds log pattern for the given message.
    *
    * @param fullMessage full message
-   * @return abbreviation
+   * @return an optional log pattern
    */
-  public static String createSummary(String fullMessage) {
+  public static Option<LogPattern> findPattern(String fullMessage) {
     String head = head(fullMessage);
-    for (LogPattern pattern : BuiltinLogPattern.values()) {
-      if (pattern.matches(head)) {
-        return pattern.longMsg();
+    for (LogPattern p : BuiltinLogPattern.values()) {
+      if (p.matches(head)) {
+        return Option.of(p);
       }
     }
-    return head;
+    return Option.none();
   }
 
-  static String head(String message) {
+  public static String head(String message) {
     int r = message.indexOf('\r');
     if (r > 0) {
       return message.substring(0, r);

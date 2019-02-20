@@ -1,10 +1,13 @@
 package qwatch.logs.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
+import io.vavr.control.Option;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
+import java.util.regex.Pattern;
 import qwatch.logs.util.LogPatterns;
 
 /**
@@ -49,11 +52,19 @@ public abstract class LogEntry { // NOSONAR: AutoValue
   public abstract String message();
 
   /**
-   * Gets summary of the full message.
+   * Gets summary of the log entry.
+   *
+   * <p>Summary is a brief description about the log without having the entire stack trace. A
+   * summary may contain expressions to illustrate the places where variables can be injected.
    *
    * @return a single line summary
    */
   public abstract String summary();
+
+  public abstract Builder toBuilder();
+
+  @JsonIgnore
+  public abstract Option<LogPattern> optLogPattern();
 
   @AutoValue.Builder
   public abstract static class Builder { // NOSONAR: AutoValue
@@ -72,15 +83,28 @@ public abstract class LogEntry { // NOSONAR: AutoValue
     @JsonProperty("message")
     public abstract Builder message(String message);
 
-    public abstract Builder summary(String summary);
+    abstract Builder summary(String summary);
+
+    abstract Builder optLogPattern(Option<LogPattern> logPattern);
 
     abstract String message();
 
     abstract LogEntry autoBuild();
 
     public LogEntry build() {
-      String summary = LogPatterns.createSummary(message());
-      summary(summary);
+      // optLogPattern
+      Option<LogPattern> pattern = LogPatterns.findPattern(message());
+      optLogPattern(pattern);
+
+      // summary
+      if (pattern.isDefined()) {
+        LogPattern p = pattern.get();
+        summary(String.format("[P%02d] %s", p.id(), p.longMsg()));
+      } else {
+        String head = LogPatterns.head(message());
+        summary(String.format("[   ] %s", head));
+      }
+
       return autoBuild();
     }
   }

@@ -31,7 +31,7 @@ import static qwatch.logs.model.BuiltinLogPattern.UNHANDLED_ERROR;
  * @author Mincong Huang
  * @since 1.0
  */
-public class BuiltinLogPattern {
+public class BuiltinLogPatternTest {
 
   @Test
   public void values() {

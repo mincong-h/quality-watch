@@ -25,7 +25,7 @@ public class SummaryExtractor {
             .toStream()
             .sortBy(t -> t._2 * -1)
             .take(n)
-            .map(t -> "- " + t._2 + ": " + t._1)
+            .map(t -> String.format("- %,6d: %s", t._2, t._1))
             .collect(Collectors.joining("\n"));
     return "Top " + n + " errors:\n" + list;
   }
