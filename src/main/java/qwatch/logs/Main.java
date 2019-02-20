@@ -14,7 +14,7 @@ public class Main {
     if (args.length < 1) {
       logger.warn("qwatch <command>");
       logger.warn("qwatch collect");
-      logger.warn("qwatch stats");
+      logger.warn("qwatch stats <topN>");
       System.exit(-1);
     }
     String command = args[0];
@@ -24,9 +24,10 @@ public class Main {
           .build()
           .execute();
     } else if (StatsCommand.NAME.equals(command)) {
+      int n = args.length > 1 ? Integer.parseInt(args[1]) : 200;
       StatsCommand.newBuilder() //
           .logDir(Paths.get("/Users/mincong/datadog"))
-          .topN(200)
+          .topN(n)
           .build()
           .execute();
     } else {
