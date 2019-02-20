@@ -57,4 +57,11 @@ public class JsonImportUtilTest {
             .build();
     assertThat(logEntries).hasSize(1).containsExactly(expectedEntry);
   }
+
+  @Test
+  public void importLogEntriesFromFile_notJson() {
+    Path nonexistent = tempDir.getRoot().toPath().resolve("nonexistent");
+    Set<LogEntry> importedSet = JsonImportUtil.importLogEntriesFromFile(nonexistent);
+    assertThat(importedSet).isEmpty();
+  }
 }
