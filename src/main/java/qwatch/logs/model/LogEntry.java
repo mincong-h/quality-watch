@@ -7,7 +7,6 @@ import com.google.auto.value.AutoValue;
 import io.vavr.control.Option;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
-import java.util.regex.Pattern;
 import qwatch.logs.util.LogPatterns;
 
 /**
