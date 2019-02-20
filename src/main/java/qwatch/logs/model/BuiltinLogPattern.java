@@ -356,12 +356,13 @@ public enum BuiltinLogPattern implements LogPattern {
   FAILED_INIT_PROJECT(21) {
     @Override
     public Pattern pattern() {
-      return Pattern.compile("^Failed to initialize project (.*)$");
+      // Sometime we have the project id, sometime we don't.
+      return Pattern.compile("^Failed to initialize project(.*)$");
     }
 
     @Override
     public String longMsg() {
-      return "Failed to initialize project ${projectId}";
+      return "Failed to initialize project";
     }
 
     @Override

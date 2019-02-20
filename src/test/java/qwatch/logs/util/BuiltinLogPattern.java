@@ -110,6 +110,9 @@ public class BuiltinLogPattern {
     s = "Failed to initialize project foo";
     assertThat(FAILED_INIT_PROJECT.matches(s)).isTrue();
 
+    s = "Failed to initialize project";
+    assertThat(FAILED_INIT_PROJECT.matches(s)).isTrue();
+
     s = "Unable to get registries for package foo";
     assertThat(UNABLE_GET_REGISTRY.matches(s)).isTrue();
 
