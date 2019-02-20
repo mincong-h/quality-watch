@@ -237,12 +237,12 @@ public enum BuiltinLogPattern implements LogPattern {
   INVALID_REF_NAME(14) {
     @Override
     public Pattern pattern() {
-      return Pattern.compile("^(.*)JGitInternalException: Invalid ref name(.*)$");
+      return Pattern.compile("^(.*)Invalid ref name(.*)$");
     }
 
     @Override
     public String longMsg() {
-      return "JGitInternalException: Invalid ref name: ${ref}";
+      return "Invalid ref name: ${ref}";
     }
 
     @Override

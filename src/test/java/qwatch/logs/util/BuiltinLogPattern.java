@@ -52,6 +52,9 @@ public class BuiltinLogPattern {
     s =
         "javax.servlet.ServletException: java.lang.IllegalStateException: org.eclipse.jgit.api.errors.JGitInternalException: Invalid ref name: HEAD";
     assertThat(INVALID_REF_NAME.matches(s)).isTrue();
+    s =
+        "javax.servlet.ServletException: java.lang.IllegalStateException: com.nuxeo.studio.core.api.exception.VersioningException: /path/to/foo.git: Invalid ref name: HEAD";
+    assertThat(INVALID_REF_NAME.matches(s)).isTrue();
 
     s = "java.io.IOException: On requestURL: http://localhost:8186/nuxeo/git/foo.git/info/refs";
     assertThat(IO_EXCEPTION_ON_REQ_URL.matches(s)).isTrue();
