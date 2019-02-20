@@ -42,7 +42,7 @@ public class JsonImportUtilTest {
     Files.write(json, content.getBytes(UTF_8));
 
     // When importing the content
-    Set<LogEntry> logEntries = JsonImportUtil.importLogEntriesFromFile(json);
+    Set<LogEntry> logEntries = JsonImportUtil.importLogEntriesFromFile(json).get();
 
     // Then the content is imported without duplicates
     ZonedDateTime d =
@@ -61,7 +61,6 @@ public class JsonImportUtilTest {
   @Test
   public void importLogEntriesFromFile_notJson() {
     Path nonexistent = tempDir.getRoot().toPath().resolve("nonexistent");
-    Set<LogEntry> importedSet = JsonImportUtil.importLogEntriesFromFile(nonexistent);
-    assertThat(importedSet).isEmpty();
+    assertThat(JsonImportUtil.importLogEntriesFromFile(nonexistent).isFailure()).isTrue();
   }
 }

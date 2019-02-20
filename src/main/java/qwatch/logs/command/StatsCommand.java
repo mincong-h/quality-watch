@@ -2,6 +2,7 @@ package qwatch.logs.command;
 
 import io.vavr.collection.Set;
 import io.vavr.collection.SortedSet;
+import io.vavr.control.Try;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -71,7 +72,13 @@ public class StatsCommand implements Command<Void> {
 
   @Override
   public Void execute() {
-    Set<LogEntry> entries = JsonImportUtil.importLogEntries(logDir);
+    Try<Set<LogEntry>> tryImport = JsonImportUtil.importLogEntries(logDir);
+    if (tryImport.isFailure()) {
+      String msg = "Failed to import log entries from " + logDir;
+      logger.error(msg, tryImport.getCause());
+      return null;
+    }
+    Set<LogEntry> entries = tryImport.get();
     String size = String.format("%,d", entries.size());
     if (entries.nonEmpty()) {
       SortedSet<LocalDate> dates =

@@ -61,18 +61,24 @@ public class CollectCommand implements Command<Try<Void>> {
     }
   }
 
-  private final Path logDir;
+  private final Path csvDir;
 
   private CollectCommand(Builder builder) {
-    this.logDir = builder.logDir;
+    this.csvDir = builder.logDir;
   }
 
   @Override
   public Try<Void> execute() {
     Path srcDir = Paths.get("/Users/mincong/datadog");
-    Set<LogEntry> entries = JsonImportUtil.importLogEntries(srcDir);
+    Try<Set<LogEntry>> tryImport = JsonImportUtil.importLogEntries(srcDir);
+    if (tryImport.isFailure()) {
+      String msg = "Failed to import log entries from " + srcDir;
+      logger.error(msg, tryImport.getCause());
+      return null;
+    }
+    Set<LogEntry> entries = tryImport.get();
 
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(logDir, "extract-*.csv")) {
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(csvDir, "extract-*.csv")) {
       List<Either<String, List<LogEntry>>> results = List.empty();
       for (Path csv : stream) {
         Either<String, List<LogEntry>> result = CsvImporter.importLogEntries(csv);

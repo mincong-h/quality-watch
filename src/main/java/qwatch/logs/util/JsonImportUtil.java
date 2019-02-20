@@ -4,13 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
+import io.vavr.control.Try;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import qwatch.logs.model.LogEntry;
 
 /**
@@ -21,22 +20,25 @@ import qwatch.logs.model.LogEntry;
  */
 public class JsonImportUtil {
 
-  private static final Logger logger = LoggerFactory.getLogger(JsonImportUtil.class);
   private static final ObjectMapper mapper = ObjectMapperFactory.newObjectMapper();
 
-  public static Set<LogEntry> importLogEntries(Path dir) {
+  public static Try<Set<LogEntry>> importLogEntries(Path dir) {
     Set<LogEntry> values = HashSet.empty();
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "log*.json")) {
       for (Path jsonFile : stream) {
-        values = values.addAll(importLogEntriesFromFile(jsonFile));
+        Try<Set<LogEntry>> result = importLogEntriesFromFile(jsonFile);
+        if (result.isFailure()) {
+          return result;
+        }
+        values = values.addAll(result.get());
       }
     } catch (IOException e) {
-      logger.error("Failed to list files in directory: " + dir, e);
+      return Try.failure(e);
     }
-    return values;
+    return Try.success(values);
   }
 
-  static Set<LogEntry> importLogEntriesFromFile(Path path) {
+  static Try<Set<LogEntry>> importLogEntriesFromFile(Path path) {
     Set<LogEntry> values = HashSet.empty();
     ObjectReader reader = mapper.readerFor(LogEntry.class);
     try {
@@ -44,10 +46,10 @@ public class JsonImportUtil {
       while (iterator.hasNext()) {
         values = values.add(iterator.next());
       }
+      return Try.success(values);
     } catch (IOException e) {
-      logger.error("Failed to read file " + path, e);
+      return Try.failure(e);
     }
-    return values;
   }
 
   private JsonImportUtil() {
