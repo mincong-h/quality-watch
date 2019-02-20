@@ -1,13 +1,11 @@
 package qwatch.logs.command;
 
 import io.vavr.Tuple2;
-import io.vavr.collection.List;
+import io.vavr.collection.HashSet;
 import io.vavr.collection.Map;
-import io.vavr.collection.Seq;
 import io.vavr.collection.Set;
 import io.vavr.collection.SortedSet;
 import io.vavr.collection.TreeSet;
-import io.vavr.control.Either;
 import io.vavr.control.Try;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -16,11 +14,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.function.Function;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import qwatch.logs.ImportCsvTask;
 import qwatch.logs.model.LogEntry;
-import qwatch.logs.util.CsvImporter;
 import qwatch.logs.util.JsonExportUtil;
 import qwatch.logs.util.JsonImportUtil;
 
@@ -62,6 +63,7 @@ public class CollectCommand implements Command<Try<Void>> {
   }
 
   private final Path csvDir;
+  private final Path destDir = Paths.get("/Users/mincong/datadog");
 
   private CollectCommand(Builder builder) {
     this.csvDir = builder.logDir;
@@ -69,37 +71,42 @@ public class CollectCommand implements Command<Try<Void>> {
 
   @Override
   public Try<Void> execute() {
-    Path srcDir = Paths.get("/Users/mincong/datadog");
-    Try<Set<LogEntry>> tryImport = JsonImportUtil.importLogEntries(srcDir);
+    // Import existing log entries
+    Try<Set<LogEntry>> tryImport = JsonImportUtil.importLogEntries(destDir);
     if (tryImport.isFailure()) {
-      String msg = "Failed to import log entries from " + srcDir;
+      String msg = "Failed to import log entries from " + destDir;
       logger.error(msg, tryImport.getCause());
       return null;
     }
     Set<LogEntry> entries = tryImport.get();
 
+    // Import new log entries (multi-thread)
+    Set<Path> csvPaths = HashSet.empty();
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(csvDir, "extract-*.csv")) {
-      List<Either<String, List<LogEntry>>> results = List.empty();
       for (Path csv : stream) {
-        Either<String, List<LogEntry>> result = CsvImporter.importLogEntries(csv);
-        if (result.isRight()) {
-          String size = String.format("%,d", result.get().size());
-          logger.info("{}: {} entries", csv, size);
-        } else {
-          logger.warn("{}: failed\n{}", csv, result.getLeft());
-        }
-        results = results.append(result);
-      }
-      Either<Seq<String>, Seq<List<LogEntry>>> seq = Either.sequence(results);
-      if (seq.isRight()) {
-        entries = entries.addAll(seq.get().flatMap(Function.identity()).toList());
-        return export(entries);
-      } else {
-        return Try.success(null);
+        csvPaths = csvPaths.add(csv);
       }
     } catch (IOException e) {
       return Try.failure(e);
     }
+    int nThreads = Runtime.getRuntime().availableProcessors();
+    ExecutorService pool = Executors.newFixedThreadPool(nThreads);
+    Set<ImportCsvTask> tasks = csvPaths.map(ImportCsvTask::new).toSet();
+    try {
+      for (Future<Set<LogEntry>> f : pool.invokeAll(tasks.toJavaSet())) {
+        if (!f.isCancelled()) {
+          entries.addAll(f.get());
+        }
+      }
+    } catch (InterruptedException e) {
+      logger.error("Interrupted", e);
+      Thread.currentThread().interrupt();
+    } catch (ExecutionException e) {
+      logger.error("Failed to get result from future", e);
+    } finally {
+      pool.shutdownNow();
+    }
+    return export(entries);
   }
 
   private Try<Void> export(Set<LogEntry> logEntries) {
