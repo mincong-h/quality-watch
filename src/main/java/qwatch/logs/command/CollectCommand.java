@@ -24,7 +24,6 @@ import qwatch.logs.ImportCsvTask;
 import qwatch.logs.ImportJsonTask;
 import qwatch.logs.model.LogEntry;
 import qwatch.logs.util.JsonExportUtil;
-import qwatch.logs.util.JsonImportUtil;
 
 /**
  * Collect command.

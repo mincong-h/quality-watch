@@ -404,6 +404,23 @@ public enum BuiltinLogPattern implements LogPattern {
     public String shortMsg() {
       return "Cannot forward to error page for request";
     }
+  },
+
+  ERROR_EXECUTING_FREEMARKER(24) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Error executing FreeMarker template$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Error executing FreeMarker template";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Error executing FreeMarker template";
+    }
   };
 
   private final int id;

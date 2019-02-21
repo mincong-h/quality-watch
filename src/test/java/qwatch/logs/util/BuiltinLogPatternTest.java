@@ -5,6 +5,7 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static qwatch.logs.model.BuiltinLogPattern.CANNOT_FORWARD_TO_ERR_PAGE;
 import static qwatch.logs.model.BuiltinLogPattern.CANNOT_VERIFY_EA;
+import static qwatch.logs.model.BuiltinLogPattern.ERROR_EXECUTING_FREEMARKER;
 import static qwatch.logs.model.BuiltinLogPattern.ERR_CREATING_MANAGED_CONNECTION;
 import static qwatch.logs.model.BuiltinLogPattern.FAILED_INIT_PROJECT;
 import static qwatch.logs.model.BuiltinLogPattern.FAILED_TO_CLONE_REPO;
@@ -119,5 +120,8 @@ public class BuiltinLogPatternTest {
     s =
         "Cannot forward to error page for request [/login] as the response has already been committed.";
     assertThat(CANNOT_FORWARD_TO_ERR_PAGE.matches(s)).isTrue();
+
+    s = "Error executing FreeMarker template";
+    assertThat(ERROR_EXECUTING_FREEMARKER.matches(s)).isTrue();
   }
 }
