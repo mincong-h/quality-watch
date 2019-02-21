@@ -75,4 +75,10 @@ public class JsonImportUtilTest {
     Set<LogEntry> logEntries = JsonImportUtil.importLogEntries(tempDir.getRoot().toPath()).get();
     assertThat(logEntries).hasSize(1);
   }
+
+  @Test
+  public void listLogPaths() {
+    Set<Path> logPaths = JsonImportUtil.listLogPaths(tempDir.getRoot().toPath()).get();
+    assertThat(logPaths).containsExactly(json);
+  }
 }

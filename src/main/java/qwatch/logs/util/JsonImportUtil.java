@@ -22,6 +22,18 @@ public class JsonImportUtil {
 
   private static final ObjectMapper mapper = ObjectMapperFactory.newObjectMapper();
 
+  public static Try<Set<Path>> listLogPaths(Path dir) {
+    Set<Path> paths = HashSet.empty();
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "log*.json")) {
+      for (Path csv : stream) {
+        paths = paths.add(csv);
+      }
+      return Try.success(paths);
+    } catch (IOException e) {
+      return Try.failure(e);
+    }
+  }
+
   public static Try<Set<LogEntry>> importLogEntries(Path dir) {
     Set<LogEntry> values = HashSet.empty();
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "log*.json")) {

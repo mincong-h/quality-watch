@@ -1,13 +1,19 @@
 package qwatch.logs.command;
 
+import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
 import io.vavr.collection.SortedSet;
 import io.vavr.control.Try;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import qwatch.logs.ImportJsonTask;
 import qwatch.logs.model.LogEntry;
 import qwatch.logs.util.JsonImportUtil;
 import qwatch.logs.util.SummaryExtractor;
@@ -72,22 +78,44 @@ public class StatsCommand implements Command<Void> {
 
   @Override
   public Void execute() {
-    Try<Set<LogEntry>> tryImport = JsonImportUtil.importLogEntries(logDir);
-    if (tryImport.isFailure()) {
+    Try<Set<Path>> tryListing = JsonImportUtil.listLogPaths(logDir);
+    if (tryListing.isFailure()) {
       String msg = "Failed to import log entries from " + logDir;
-      logger.error(msg, tryImport.getCause());
+      logger.error(msg, tryListing.getCause());
       return null;
     }
-    Set<LogEntry> entries = tryImport.get();
-    String size = String.format("%,d", entries.size());
+
+    // Create thread pool
+    int nThreads = Runtime.getRuntime().availableProcessors();
+    ExecutorService pool = Executors.newFixedThreadPool(nThreads);
+    Set<LogEntry> entries = HashSet.empty();
+    Set<ImportJsonTask> tasks = tryListing.get().map(ImportJsonTask::new);
+
+    // Import log entries
+    try {
+      for (Future<Set<LogEntry>> f : pool.invokeAll(tasks.toJavaSet())) {
+        if (!f.isCancelled()) {
+          entries = entries.addAll(f.get());
+        }
+      }
+    } catch (InterruptedException e) {
+      logger.error("Interrupted", e);
+      Thread.currentThread().interrupt();
+    } catch (ExecutionException e) {
+      logger.error("Failed to get result from future", e);
+    } finally {
+      pool.shutdownNow();
+    }
+
     if (entries.nonEmpty()) {
       SortedSet<LocalDate> dates =
           entries.map(LogEntry::dateTime).map(ZonedDateTime::toLocalDate).toSortedSet();
       LocalDate start = dates.head();
       LocalDate end = dates.last();
+      String size = String.format("%,d", entries.size());
       logger.info("{} entries extracted ({} to {}).", size, start, end);
     } else {
-      logger.info("{} entries extracted.", size);
+      logger.info("0 entries extracted.");
     }
 
     String summary = new SummaryExtractor(entries).top(topN);
