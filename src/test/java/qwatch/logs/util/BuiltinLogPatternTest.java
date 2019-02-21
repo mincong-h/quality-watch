@@ -1,6 +1,9 @@
 package qwatch.logs.util;
 
+import io.vavr.collection.Stream;
 import org.junit.Test;
+import qwatch.logs.model.BuiltinLogPattern;
+import qwatch.logs.model.LogPattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static qwatch.logs.model.BuiltinLogPattern.CANNOT_FORWARD_TO_ERR_PAGE;
@@ -33,6 +36,20 @@ import static qwatch.logs.model.BuiltinLogPattern.UNHANDLED_ERROR;
  * @since 1.0
  */
 public class BuiltinLogPatternTest {
+
+  @Test
+  public void longMsg_noDuplicates() {
+    int expectedSize = BuiltinLogPattern.values().length;
+    int actualSize = Stream.of(BuiltinLogPattern.values()).map(LogPattern::longMsg).toSet().size();
+    assertThat(expectedSize).isEqualTo(actualSize);
+  }
+
+  @Test
+  public void shortMsg_noDuplicates() {
+    int expectedSize = BuiltinLogPattern.values().length;
+    int actualSize = Stream.of(BuiltinLogPattern.values()).map(LogPattern::shortMsg).toSet().size();
+    assertThat(expectedSize).isEqualTo(actualSize);
+  }
 
   @Test
   public void values() {
