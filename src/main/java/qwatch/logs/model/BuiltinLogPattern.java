@@ -406,6 +406,11 @@ public enum BuiltinLogPattern implements LogPattern {
     }
   },
 
+  /**
+   * Error executing FreeMarker template
+   *
+   * @see <a href="https://jira.nuxeo.com/browse/NXCONNECT-2087"></a>
+   */
   ERROR_EXECUTING_FREEMARKER(24) {
     @Override
     public Pattern pattern() {
