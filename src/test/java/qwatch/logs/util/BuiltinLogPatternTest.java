@@ -8,6 +8,7 @@ import qwatch.logs.model.LogPattern;
 import static org.assertj.core.api.Assertions.assertThat;
 import static qwatch.logs.model.BuiltinLogPattern.CANNOT_FORWARD_TO_ERR_PAGE;
 import static qwatch.logs.model.BuiltinLogPattern.CANNOT_VERIFY_EA;
+import static qwatch.logs.model.BuiltinLogPattern.ERROR_400_JIRA;
 import static qwatch.logs.model.BuiltinLogPattern.ERROR_EXECUTING_FREEMARKER;
 import static qwatch.logs.model.BuiltinLogPattern.ERR_CREATING_MANAGED_CONNECTION;
 import static qwatch.logs.model.BuiltinLogPattern.FAILED_INIT_PROJECT;
@@ -140,5 +141,8 @@ public class BuiltinLogPatternTest {
 
     s = "Error executing FreeMarker template";
     assertThat(ERROR_EXECUTING_FREEMARKER.matches(s)).isTrue();
+
+    s = "Bad status when performing REST request to Jira: 400";
+    assertThat(ERROR_400_JIRA.matches(s)).isTrue();
   }
 }

@@ -426,6 +426,29 @@ public enum BuiltinLogPattern implements LogPattern {
     public String shortMsg() {
       return "Error executing FreeMarker template";
     }
+  },
+
+  /**
+   * REST request to JIRA: 400
+   *
+   * @see <a href="https://jira.nuxeo.com/browse/NXCONNECT-2090">Add more details when failed to
+   *     perform REST request to Jira: 400</a>
+   */
+  ERROR_400_JIRA(25) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Bad status when performing REST request to Jira: 400$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Bad status when performing REST request to Jira: 400";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "REST request to Jira: 400";
+    }
   };
 
   private final int id;
