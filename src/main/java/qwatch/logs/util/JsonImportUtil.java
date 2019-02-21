@@ -38,7 +38,7 @@ public class JsonImportUtil {
     return Try.success(values);
   }
 
-  static Try<Set<LogEntry>> importLogEntriesFromFile(Path path) {
+  public static Try<Set<LogEntry>> importLogEntriesFromFile(Path path) {
     Set<LogEntry> values = HashSet.empty();
     ObjectReader reader = mapper.readerFor(LogEntry.class);
     try {

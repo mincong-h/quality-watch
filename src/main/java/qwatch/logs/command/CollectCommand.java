@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.logs.ImportCsvTask;
+import qwatch.logs.ImportJsonTask;
 import qwatch.logs.model.LogEntry;
 import qwatch.logs.util.JsonExportUtil;
 import qwatch.logs.util.JsonImportUtil;
@@ -71,16 +72,35 @@ public class CollectCommand implements Command<Try<Void>> {
 
   @Override
   public Try<Void> execute() {
-    // Import existing log entries
-    Try<Set<LogEntry>> tryImport = JsonImportUtil.importLogEntries(destDir);
-    if (tryImport.isFailure()) {
-      String msg = "Failed to import log entries from " + destDir;
-      logger.error(msg, tryImport.getCause());
-      return null;
-    }
-    Set<LogEntry> entries = tryImport.get();
+    // Create thread pool
+    int nThreads = Runtime.getRuntime().availableProcessors();
+    ExecutorService pool = Executors.newFixedThreadPool(nThreads);
+    Set<LogEntry> entries = HashSet.empty();
 
-    // Import new log entries (multi-thread)
+    // Import existing log entries
+    Set<Path> jsonPaths = HashSet.empty();
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(destDir, "log*.json")) {
+      for (Path csv : stream) {
+        jsonPaths = jsonPaths.add(csv);
+      }
+    } catch (IOException e) {
+      return Try.failure(e);
+    }
+    Set<ImportJsonTask> jsonTasks = jsonPaths.map(ImportJsonTask::new).toSet();
+    try {
+      for (Future<Set<LogEntry>> f : pool.invokeAll(jsonTasks.toJavaSet())) {
+        if (!f.isCancelled()) {
+          entries = entries.addAll(f.get());
+        }
+      }
+    } catch (InterruptedException e) {
+      logger.error("Interrupted", e);
+      Thread.currentThread().interrupt();
+    } catch (ExecutionException e) {
+      logger.error("Failed to get result from future", e);
+    }
+
+    // Import new log entries
     Set<Path> csvPaths = HashSet.empty();
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(csvDir, "extract-*.csv")) {
       for (Path csv : stream) {
@@ -89,13 +109,11 @@ public class CollectCommand implements Command<Try<Void>> {
     } catch (IOException e) {
       return Try.failure(e);
     }
-    int nThreads = Runtime.getRuntime().availableProcessors();
-    ExecutorService pool = Executors.newFixedThreadPool(nThreads);
-    Set<ImportCsvTask> tasks = csvPaths.map(ImportCsvTask::new).toSet();
+    Set<ImportCsvTask> csvTasks = csvPaths.map(ImportCsvTask::new).toSet();
     try {
-      for (Future<Set<LogEntry>> f : pool.invokeAll(tasks.toJavaSet())) {
+      for (Future<Set<LogEntry>> f : pool.invokeAll(csvTasks.toJavaSet())) {
         if (!f.isCancelled()) {
-          entries.addAll(f.get());
+          entries = entries.addAll(f.get());
         }
       }
     } catch (InterruptedException e) {
