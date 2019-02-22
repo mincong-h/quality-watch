@@ -31,8 +31,8 @@ public class CsvImporterTest {
     logPath = tempDir.newFile().toPath();
     List<String> linesF1 = new ArrayList<>();
     linesF1.add("date,Host,Service,Status,message");
-    linesF1.add("2019-02-11T12:13:57.916Z,foo,nos-15,error,Project foo not found.");
-    linesF1.add("2019-02-11T12:13:57.917Z,foo,nos-15,error,\"First line");
+    linesF1.add("2019-02-11T12:13:57.916Z,foo,myService,error,Project foo not found.");
+    linesF1.add("2019-02-11T12:13:57.917Z,foo,myService,error,\"First line");
     linesF1.add("another line\"");
     Files.write(logPath, linesF1);
   }
@@ -50,7 +50,7 @@ public class CsvImporterTest {
         LogEntry.newBuilder()
             .dateTime(LocalDateTime.of(2019, 2, 11, 12, 13, 57, 916_000_000).atZone(UTC))
             .host("foo")
-            .service("nos-15")
+            .service("myService")
             .status("error")
             .message("Project foo not found.")
             .build();
@@ -58,7 +58,7 @@ public class CsvImporterTest {
         LogEntry.newBuilder()
             .dateTime(LocalDateTime.of(2019, 2, 11, 12, 13, 57, 917_000_000).atZone(UTC))
             .host("foo")
-            .service("nos-15")
+            .service("myService")
             .status("error")
             .message("First line\nanother line")
             .build();

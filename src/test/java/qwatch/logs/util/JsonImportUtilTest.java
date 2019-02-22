@@ -30,16 +30,16 @@ public class JsonImportUtilTest {
     String content =
         "[{\n"
             + "  \"date\" : \"2019-02-14T12:44:20.962Z\",\n"
-            + "  \"host\" : \"nos-prod-nuxp-15-10-3-8-228-euw\",\n"
-            + "  \"service\" : \"nos-15\",\n"
+            + "  \"host\" : \"myHost\",\n"
+            + "  \"service\" : \"myService\",\n"
             + "  \"status\" : \"error\",\n"
-            + "  \"message\" : \"Project experimental2017 not found.\"\n"
+            + "  \"message\" : \"Project myProject not found.\"\n"
             + "}, {\n"
             + "  \"date\" : \"2019-02-14T12:44:20.962Z\",\n"
-            + "  \"host\" : \"nos-prod-nuxp-15-10-3-8-228-euw\",\n"
-            + "  \"service\" : \"nos-15\",\n"
+            + "  \"host\" : \"myHost\",\n"
+            + "  \"service\" : \"myService\",\n"
             + "  \"status\" : \"error\",\n"
-            + "  \"message\" : \"Project experimental2017 not found.\"\n"
+            + "  \"message\" : \"Project myProject not found.\"\n"
             + "}]";
     Files.write(json, content.getBytes(UTF_8));
   }
@@ -56,9 +56,9 @@ public class JsonImportUtilTest {
     LogEntry expectedEntry =
         LogEntry.newBuilder()
             .dateTime(d)
-            .host("nos-prod-nuxp-15-10-3-8-228-euw")
-            .message("Project experimental2017 not found.")
-            .service("nos-15")
+            .host("myHost")
+            .message("Project myProject not found.")
+            .service("myService")
             .status("error")
             .build();
     assertThat(logEntries).hasSize(1).containsExactly(expectedEntry);
