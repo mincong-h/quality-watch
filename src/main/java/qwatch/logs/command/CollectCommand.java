@@ -72,8 +72,7 @@ public class CollectCommand implements Command<Try<Void>> {
   @Override
   public Try<Void> execute() {
     // Create thread pool
-    int nThreads = Runtime.getRuntime().availableProcessors();
-    ExecutorService pool = Executors.newFixedThreadPool(nThreads);
+    ExecutorService pool = Executors.newWorkStealingPool();
     Set<LogEntry> entries = HashSet.empty();
 
     // Import existing log entries

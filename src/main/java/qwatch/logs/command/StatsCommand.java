@@ -86,8 +86,7 @@ public class StatsCommand implements Command<Void> {
     }
 
     // Create thread pool
-    int nThreads = Runtime.getRuntime().availableProcessors();
-    ExecutorService pool = Executors.newFixedThreadPool(nThreads);
+    ExecutorService pool = Executors.newWorkStealingPool();
     Set<LogEntry> entries = HashSet.empty();
     Set<ImportJsonTask> tasks = tryListing.get().map(ImportJsonTask::new);
 
