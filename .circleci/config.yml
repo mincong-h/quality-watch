@@ -1,0 +1,20 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    working_directory: ~/quality-watch
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependencies-{{ checksum "pom.xml" }}
+            - dependencies-
+      - run: mvn -B -q install -DskipTests
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: dependencies-{{ checksum "pom.xml" }}
+      - run: mvn verify
+      - store_test_results:
+          path: target/surefire-reports
