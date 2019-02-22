@@ -21,9 +21,9 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.logs.ImportCsvTask;
-import qwatch.logs.ImportJsonTask;
 import qwatch.logs.model.LogEntry;
 import qwatch.logs.util.JsonExportUtil;
+import qwatch.logs.util.JsonImportUtil;
 
 /**
  * Collect command.
@@ -71,32 +71,15 @@ public class CollectCommand implements Command<Try<Void>> {
 
   @Override
   public Try<Void> execute() {
-    // Create thread pool
-    ExecutorService pool = Executors.newWorkStealingPool();
-    Set<LogEntry> entries = HashSet.empty();
+    Set<LogEntry> entries;
 
     // Import existing log entries
-    Set<Path> jsonPaths = HashSet.empty();
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(destDir, "log*.json")) {
-      for (Path csv : stream) {
-        jsonPaths = jsonPaths.add(csv);
-      }
-    } catch (IOException e) {
-      return Try.failure(e);
+    Try<Set<LogEntry>> tryImport = JsonImportUtil.importLogEntries(destDir);
+    if (tryImport.isFailure()) {
+      logger.error("Failed to import JSON files", tryImport.getCause());
+      return null;
     }
-    Set<ImportJsonTask> jsonTasks = jsonPaths.map(ImportJsonTask::new).toSet();
-    try {
-      for (Future<Set<LogEntry>> f : pool.invokeAll(jsonTasks.toJavaSet())) {
-        if (!f.isCancelled()) {
-          entries = entries.addAll(f.get());
-        }
-      }
-    } catch (InterruptedException e) {
-      logger.error("Interrupted", e);
-      Thread.currentThread().interrupt();
-    } catch (ExecutionException e) {
-      logger.error("Failed to get result from future", e);
-    }
+    entries = tryImport.get();
 
     // Import new log entries
     Set<Path> csvPaths = HashSet.empty();
@@ -107,6 +90,7 @@ public class CollectCommand implements Command<Try<Void>> {
     } catch (IOException e) {
       return Try.failure(e);
     }
+    ExecutorService pool = Executors.newWorkStealingPool();
     Set<ImportCsvTask> csvTasks = csvPaths.map(ImportCsvTask::new).toSet();
     try {
       for (Future<Set<LogEntry>> f : pool.invokeAll(csvTasks.toJavaSet())) {

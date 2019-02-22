@@ -10,6 +10,13 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import qwatch.logs.ImportJsonTask;
 import qwatch.logs.model.LogEntry;
 
 /**
@@ -21,6 +28,7 @@ import qwatch.logs.model.LogEntry;
 public class JsonImportUtil {
 
   private static final ObjectMapper mapper = ObjectMapperFactory.newObjectMapper();
+  private static final Logger logger = LoggerFactory.getLogger(JsonImportUtil.class);
 
   public static Try<Set<Path>> listLogPaths(Path dir) {
     Set<Path> paths = HashSet.empty();
@@ -35,19 +43,35 @@ public class JsonImportUtil {
   }
 
   public static Try<Set<LogEntry>> importLogEntries(Path dir) {
-    Set<LogEntry> values = HashSet.empty();
+    // Find paths
+    Set<Path> paths = HashSet.empty();
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "log*.json")) {
-      for (Path jsonFile : stream) {
-        Try<Set<LogEntry>> result = importLogEntriesFromFile(jsonFile);
-        if (result.isFailure()) {
-          return result;
-        }
-        values = values.addAll(result.get());
+      for (Path p : stream) {
+        paths = paths.add(p);
       }
     } catch (IOException e) {
       return Try.failure(e);
     }
-    return Try.success(values);
+    // Import log entries
+    Set<LogEntry> entries = HashSet.empty();
+    ExecutorService pool = Executors.newWorkStealingPool();
+    Set<ImportJsonTask> tasks = paths.map(ImportJsonTask::new).toSet();
+    try {
+      for (Future<Set<LogEntry>> f : pool.invokeAll(tasks.toJavaSet())) {
+        if (!f.isCancelled()) {
+          entries = entries.addAll(f.get());
+        }
+      }
+    } catch (InterruptedException e) {
+      logger.error("Interrupted", e);
+      Thread.currentThread().interrupt();
+    } catch (ExecutionException e) {
+      logger.error("Failed to get result from future", e);
+      return Try.failure(e);
+    } finally {
+      pool.shutdownNow();
+    }
+    return Try.success(entries);
   }
 
   public static Try<Set<LogEntry>> importLogEntriesFromFile(Path path) {
