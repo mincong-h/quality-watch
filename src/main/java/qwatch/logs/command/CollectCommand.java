@@ -24,7 +24,7 @@ import qwatch.logs.util.JsonImportUtil;
  * @author Mincong Huang
  * @since 1.0
  */
-public class CollectCommand implements Command<Try<Void>> {
+public class CollectCommand implements Command<Void> {
 
   private static final Logger logger = LoggerFactory.getLogger(CollectCommand.class);
   public static final String NAME = "collect";
@@ -63,7 +63,7 @@ public class CollectCommand implements Command<Try<Void>> {
   }
 
   @Override
-  public Try<Void> execute() {
+  public Void execute() {
     Set<LogEntry> entries;
 
     // Import existing log entries
@@ -80,7 +80,11 @@ public class CollectCommand implements Command<Try<Void>> {
       logger.error(eitherImport.getLeft());
     }
     entries = entries.addAll(eitherImport.get());
-    return export(entries);
+    Try<Void> exportResult = export(entries);
+    if (exportResult.isFailure()) {
+      logger.error("Failed to export", exportResult.getCause());
+    }
+    return null;
   }
 
   private Try<Void> export(Set<LogEntry> logEntries) {
