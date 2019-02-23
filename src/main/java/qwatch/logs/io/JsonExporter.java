@@ -1,7 +1,6 @@
 package qwatch.logs.io;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vavr.Tuple2;
 import io.vavr.collection.Map;
 import io.vavr.collection.SortedSet;
 import io.vavr.control.Try;
@@ -28,8 +27,8 @@ public class JsonExporter {
   }
 
   public Try<Void> export(Map<LocalDate, SortedSet<LogEntry>> entriesByDay) {
-    for (Tuple2<LocalDate, SortedSet<LogEntry>> t : entriesByDay) {
-      String filename = "log." + DateTimeFormatter.ISO_DATE.format(t._1) + ".json";
+    for (var tuple : entriesByDay) {
+      String filename = "log." + DateTimeFormatter.ISO_DATE.format(tuple._1) + ".json";
       Path path = logDir.resolve(filename);
       try {
         Files.deleteIfExists(path);
@@ -37,7 +36,7 @@ public class JsonExporter {
         return Try.failure(e);
       }
       try (FileWriter w = new FileWriter(path.toFile())) {
-        mapper.writeValue(w, t._2.toJavaList());
+        mapper.writeValue(w, tuple._2.toJavaList());
       } catch (IOException e) {
         return Try.failure(e);
       }

@@ -92,15 +92,15 @@ public abstract class LogEntry { // NOSONAR: AutoValue
 
     public LogEntry build() {
       // optLogPattern
-      Option<LogPattern> pattern = LogPatterns.findPattern(message());
+      var pattern = LogPatterns.findPattern(message());
       optLogPattern(pattern);
 
       // summary
       if (pattern.isDefined()) {
-        LogPattern p = pattern.get();
+        var p = pattern.get();
         summary(String.format("[P%02d] %s", p.id(), p.longMsg()));
       } else {
-        String head = LogPatterns.head(message());
+        var head = LogPatterns.head(message());
         summary(String.format("[   ] %s", head));
       }
 

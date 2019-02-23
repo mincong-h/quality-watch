@@ -1,11 +1,9 @@
 package qwatch.logs.io;
 
-import io.vavr.collection.Set;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +25,7 @@ public class JsonImporterTest {
   @Before
   public void setUp() throws Exception {
     json = tempDir.newFile("log.2019-02-14.json").toPath();
-    String content =
+    var content =
         "[{\n"
             + "  \"date\" : \"2019-02-14T12:44:20.962Z\",\n"
             + "  \"host\" : \"myHost\",\n"
@@ -48,12 +46,11 @@ public class JsonImporterTest {
   public void importLogEntriesFromFile_noDuplicates() {
     // Given an existing JSON file with duplicates
     // When importing the content
-    Set<LogEntry> logEntries = JsonImporter.importLogEntriesFromFile(json).get();
+    var logEntries = JsonImporter.importLogEntriesFromFile(json).get();
 
     // Then the content is imported without duplicates
-    ZonedDateTime d =
-        LocalDateTime.of(2019, 2, 14, 12, 44, 20, 962_000_000).atZone(ZoneId.of("UTC"));
-    LogEntry expectedEntry =
+    var d = LocalDateTime.of(2019, 2, 14, 12, 44, 20, 962_000_000).atZone(ZoneId.of("UTC"));
+    var expectedEntry =
         LogEntry.newBuilder()
             .dateTime(d)
             .host("myHost")
@@ -66,19 +63,19 @@ public class JsonImporterTest {
 
   @Test
   public void importLogEntriesFromFile_notJson() {
-    Path nonexistent = tempDir.getRoot().toPath().resolve("nonexistent");
+    var nonexistent = tempDir.getRoot().toPath().resolve("nonexistent");
     assertThat(JsonImporter.importLogEntriesFromFile(nonexistent).isFailure()).isTrue();
   }
 
   @Test
   public void importLogEntries_noDuplicates() {
-    Set<LogEntry> logEntries = JsonImporter.importLogEntries(tempDir.getRoot().toPath()).get();
+    var logEntries = JsonImporter.importLogEntries(tempDir.getRoot().toPath()).get();
     assertThat(logEntries).hasSize(1);
   }
 
   @Test
   public void listLogPaths() {
-    Set<Path> logPaths = JsonImporter.listLogPaths(tempDir.getRoot().toPath()).get();
+    var logPaths = JsonImporter.listLogPaths(tempDir.getRoot().toPath()).get();
     assertThat(logPaths).containsExactly(json);
   }
 }

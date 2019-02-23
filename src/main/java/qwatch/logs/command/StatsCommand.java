@@ -1,9 +1,6 @@
 package qwatch.logs.command;
 
 import io.vavr.collection.List;
-import io.vavr.collection.Set;
-import io.vavr.collection.SortedSet;
-import io.vavr.control.Try;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -92,16 +89,15 @@ public class StatsCommand implements Command<List<LogSummary>> {
   @Override
   public List<LogSummary> execute() {
     // Import log entries
-    Try<Set<LogEntry>> tryImport = JsonImporter.importLogEntries(logDir);
+    var tryImport = JsonImporter.importLogEntries(logDir);
     if (tryImport.isFailure()) {
       logger.error("Failed to import JSON files", tryImport.getCause());
       return List.empty();
     }
-    Set<LogEntry> entries = tryImport.get();
+    var entries = tryImport.get();
     if (entries.nonEmpty()) {
-      SortedSet<LocalDate> dates =
-          entries.map(LogEntry::dateTime).map(ZonedDateTime::toLocalDate).toSortedSet();
-      LocalDate end = dates.last(); // inclusive
+      var dates = entries.map(LogEntry::dateTime).map(ZonedDateTime::toLocalDate).toSortedSet();
+      var end = dates.last(); // inclusive
       LocalDate start; // inclusive
       if (days >= 0 && dates.head().isBefore(end.minusDays(days - 1))) {
         start = end.minusDays(days - 1);
@@ -109,15 +105,15 @@ public class StatsCommand implements Command<List<LogSummary>> {
         start = dates.head();
       }
       entries = entries.filter(e -> !e.dateTime().toLocalDate().isBefore(start));
-      String size = String.format("%,d", entries.size());
+      var size = String.format("%,d", entries.size());
       logger.info("{} entries extracted ({} to {}).", size, start, end);
     } else {
       logger.info("0 entries extracted.");
     }
 
     // Summary
-    List<LogSummary> summaries = new SummaryExtractor(entries).top(topN);
-    String detail =
+    var summaries = new SummaryExtractor(entries).top(topN);
+    var detail =
         summaries
             .map(s -> String.format("- %,6d: %s", s.count(), s.description()))
             .collect(Collectors.joining("\n"));

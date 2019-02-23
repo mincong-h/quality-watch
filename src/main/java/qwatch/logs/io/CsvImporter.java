@@ -16,9 +16,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.logs.model.LogEntry;
@@ -55,20 +53,20 @@ public class CsvImporter {
 
   public static Either<String, Set<LogEntry>> importLogEntries(Path dir) {
     // Find paths
-    Try<Set<Path>> tryListing = listCsvPaths(dir);
+    var tryListing = listCsvPaths(dir);
     if (tryListing.isFailure()) {
       return Either.left(tryListing.getCause().getMessage());
     }
-    Set<Path> paths = tryListing.get();
+    var paths = tryListing.get();
 
     // Import log entries
     Set<LogEntry> entries = HashSet.empty();
-    ExecutorService pool = Executors.newWorkStealingPool();
-    Set<ImportCsvTask> tasks = paths.map(ImportCsvTask::new).toSet();
+    var pool = Executors.newWorkStealingPool();
+    var tasks = paths.map(ImportCsvTask::new).toSet();
     try {
-      for (Future<Set<LogEntry>> f : pool.invokeAll(tasks.toJavaSet())) {
-        if (!f.isCancelled()) {
-          entries = entries.addAll(f.get());
+      for (var future : pool.invokeAll(tasks.toJavaSet())) {
+        if (!future.isCancelled()) {
+          entries = entries.addAll(future.get());
         }
       }
     } catch (InterruptedException e) {
@@ -87,10 +85,9 @@ public class CsvImporter {
     try {
       content = new String(Files.readAllBytes(logPath), UTF_8);
     } catch (IOException e) {
-      String message = "Failed to read logs from filepath: " + logPath;
-      return Either.left(message);
+      return Either.left("Failed to read logs from filepath: " + logPath);
     }
-    Either<String, List<String[]>> parsed = internalParseCsv(content);
+    var parsed = internalParseCsv(content);
     if (parsed.isLeft()) {
       return Either.left(parsed.getLeft());
     }
@@ -98,9 +95,9 @@ public class CsvImporter {
     java.util.List<String> failures = new ArrayList<>();
     boolean isHeader = true;
     Map<String, Integer> columnMapping = HashMap.empty();
-    for (String[] row : parsed.get()) {
+    for (var row : parsed.get()) {
       if (isHeader) {
-        Either<String, Map<String, Integer>> m = toHeaderMapping(row);
+        var m = toHeaderMapping(row);
         if (m.isLeft()) {
           return Either.left(m.getLeft());
         }
@@ -125,10 +122,10 @@ public class CsvImporter {
    * @return either a LogEntry or a failure
    */
   private static Either<String, LogEntry> toLogEntry(String[] columns, Map<String, Integer> index) {
-    String dateStr = columns[index.get(COL_DATE).get()];
-    String service = columns[index.get(COL_SERVICE).get()];
-    String message = columns[index.get(COL_MESSAGE).get()];
-    String host = columns[index.get(COL_HOST).get()];
+    var dateStr = columns[index.get(COL_DATE).get()];
+    var service = columns[index.get(COL_SERVICE).get()];
+    var message = columns[index.get(COL_MESSAGE).get()];
+    var host = columns[index.get(COL_HOST).get()];
     String status;
     ZonedDateTime d;
 
@@ -145,7 +142,7 @@ public class CsvImporter {
     }
 
     // build
-    LogEntry entry =
+    var entry =
         LogEntry.newBuilder()
             .dateTime(d)
             .host(host)
@@ -161,9 +158,9 @@ public class CsvImporter {
     for (int i = 0; i < columns.length; i++) {
       mapping = mapping.put(columns[i], i);
     }
-    for (String c : REQUIRED_COLUMNS) {
-      if (!mapping.containsKey(c)) {
-        return Either.left("Missing required column: " + c + " in CSV");
+    for (var col : REQUIRED_COLUMNS) {
+      if (!mapping.containsKey(col)) {
+        return Either.left("Missing required column: " + col + " in CSV");
       }
     }
     return Either.right(mapping);
@@ -183,8 +180,8 @@ public class CsvImporter {
     char newline1 = '\n';
     char newline2 = '\r';
 
-    java.util.List<String[]> rows = new ArrayList<>();
-    char[] arr = content.toCharArray();
+    var rows = new ArrayList<String[]>();
+    var arr = content.toCharArray();
     int cols = 1;
 
     // Header
@@ -194,7 +191,7 @@ public class CsvImporter {
       }
     }
 
-    String[] row = new String[cols];
+    var row = new String[cols];
     int columnIdx = 0;
     int i = 0;
     while (i < arr.length) {

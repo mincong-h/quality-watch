@@ -23,10 +23,10 @@ public class StatsCommandTest {
 
   @Before
   public void setUp() throws Exception {
-    Path csv1 = tempDir.newFile("log.2019-01-01.json").toPath();
-    Path csv2 = tempDir.newFile("log.2019-01-02.json").toPath();
-    Path csv3 = tempDir.newFile("log.2019-01-03.json").toPath();
-    List<String> lines =
+    var csv1 = tempDir.newFile("log.2019-01-01.json").toPath();
+    var csv2 = tempDir.newFile("log.2019-01-02.json").toPath();
+    var csv3 = tempDir.newFile("log.2019-01-03.json").toPath();
+    var lines =
         List.of("  \"host\" : \"myHost\",")
             .append("  \"service\" : \"myService\",")
             .append("  \"status\" : \"error\",")
@@ -43,8 +43,7 @@ public class StatsCommandTest {
 
   @Test
   public void execute() {
-    List<LogSummary> summaries =
-        StatsCommand.newBuilder().logDir(tempRoot).days(2).topN(1).build().execute();
+    var summaries = StatsCommand.newBuilder().logDir(tempRoot).days(2).topN(1).build().execute();
     assertThat(summaries).containsExactly(LogSummary.of(2, "[   ] Foo"));
   }
 }

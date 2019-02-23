@@ -1,7 +1,6 @@
 package qwatch.logs.util;
 
 import io.vavr.collection.HashSet;
-import io.vavr.collection.List;
 import io.vavr.collection.Set;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -22,7 +21,7 @@ public class SummaryExtractorTest {
 
   @Before
   public void setUp() {
-    LogEntry a1 =
+    var a1 =
         LogEntry.newBuilder()
             .host("myHost")
             .message("a")
@@ -30,11 +29,11 @@ public class SummaryExtractorTest {
             .service("myService")
             .dateTime(LocalDateTime.of(2019, 1, 2, 3, 4, 5).atZone(ZoneId.of("Z")))
             .build();
-    LogEntry a2 =
+    var a2 =
         a1.toBuilder()
             .dateTime(LocalDateTime.of(2019, 2, 2, 3, 4, 5).atZone(ZoneId.of("Z")))
             .build();
-    LogEntry b1 =
+    var b1 =
         LogEntry.newBuilder()
             .host("myHost")
             .message("b")
@@ -47,8 +46,8 @@ public class SummaryExtractorTest {
 
   @Test
   public void top() {
-    SummaryExtractor extractor = new SummaryExtractor(entrySet);
-    List<LogSummary> summaries = extractor.top(2);
+    var extractor = new SummaryExtractor(entrySet);
+    var summaries = extractor.top(2);
     assertThat(summaries).containsExactly(LogSummary.of(2, "[   ] a"), LogSummary.of(1, "[   ] b"));
   }
 }

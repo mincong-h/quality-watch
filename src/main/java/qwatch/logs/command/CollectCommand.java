@@ -1,20 +1,17 @@
 package qwatch.logs.command;
 
 import io.vavr.collection.Map;
-import io.vavr.collection.Set;
 import io.vavr.collection.SortedSet;
 import io.vavr.collection.TreeSet;
-import io.vavr.control.Either;
-import io.vavr.control.Try;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qwatch.logs.io.JsonExporter;
-import qwatch.logs.model.LogEntry;
 import qwatch.logs.io.CsvImporter;
+import qwatch.logs.io.JsonExporter;
 import qwatch.logs.io.JsonImporter;
+import qwatch.logs.model.LogEntry;
 
 /**
  * Collect command.
@@ -62,18 +59,16 @@ public class CollectCommand implements Command<Void> {
 
   @Override
   public Void execute() {
-    Set<LogEntry> entries;
-
     // Import existing log entries
-    Try<Set<LogEntry>> tryImport = JsonImporter.importLogEntries(destDir);
+    var tryImport = JsonImporter.importLogEntries(destDir);
     if (tryImport.isFailure()) {
       logger.error("Failed to import JSON files", tryImport.getCause());
       return null;
     }
-    entries = tryImport.get();
+    var entries = tryImport.get();
 
     // Import new log entries
-    Either<String, Set<LogEntry>> eitherImport = CsvImporter.importLogEntries(csvDir);
+    var eitherImport = CsvImporter.importLogEntries(csvDir);
     if (eitherImport.isLeft()) {
       logger.error(eitherImport.getLeft());
     }
@@ -84,7 +79,7 @@ public class CollectCommand implements Command<Void> {
         entries
             .groupBy(entry -> entry.dateTime().toLocalDate())
             .mapValues(v -> TreeSet.ofAll(LogEntry.BY_DATE, v));
-    Try<Void> exportResult = new JsonExporter(destDir).export(entriesByDay);
+    var exportResult = new JsonExporter(destDir).export(entriesByDay);
     if (exportResult.isFailure()) {
       logger.error("Failed to export", exportResult.getCause());
     }

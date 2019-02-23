@@ -17,7 +17,7 @@ public class Main {
       logger.warn("qwatch stats <topN>");
       System.exit(-1);
     }
-    String command = args[0];
+    var command = args[0];
     if (CollectCommand.NAME.equals(command)) {
       CollectCommand.newBuilder() //
           .logDir(Paths.get("/Users/mincong/Downloads"))

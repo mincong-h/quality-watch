@@ -14,7 +14,7 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 public class ObjectMapperFactory {
 
   public static ObjectMapper newObjectMapper() {
-    ObjectMapper mapper = new ObjectMapper();
+    var mapper = new ObjectMapper();
     mapper.registerModule(new Jdk8Module());
     mapper.registerModule(new ParameterNamesModule());
     mapper.registerModule(new JavaTimeModule());

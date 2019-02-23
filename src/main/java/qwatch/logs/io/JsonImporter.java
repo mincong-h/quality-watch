@@ -1,7 +1,6 @@
 package qwatch.logs.io;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
 import io.vavr.control.Try;
@@ -11,9 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.logs.model.LogEntry;
@@ -44,20 +41,20 @@ public class JsonImporter {
 
   public static Try<Set<LogEntry>> importLogEntries(Path dir) {
     // Find paths
-    Try<Set<Path>> tryListing = listLogPaths(dir);
+    var tryListing = listLogPaths(dir);
     if (tryListing.isFailure()) {
       return Try.failure(tryListing.getCause());
     }
-    Set<Path> paths = tryListing.get();
+    var paths = tryListing.get();
 
     // Import log entries
     Set<LogEntry> entries = HashSet.empty();
-    ExecutorService pool = Executors.newWorkStealingPool();
-    Set<ImportJsonTask> tasks = paths.map(ImportJsonTask::new).toSet();
+    var pool = Executors.newWorkStealingPool();
+    var tasks = paths.map(ImportJsonTask::new).toSet();
     try {
-      for (Future<Set<LogEntry>> f : pool.invokeAll(tasks.toJavaSet())) {
-        if (!f.isCancelled()) {
-          entries = entries.addAll(f.get());
+      for (var future : pool.invokeAll(tasks.toJavaSet())) {
+        if (!future.isCancelled()) {
+          entries = entries.addAll(future.get());
         }
       }
     } catch (InterruptedException e) {
@@ -74,7 +71,7 @@ public class JsonImporter {
 
   public static Try<Set<LogEntry>> importLogEntriesFromFile(Path path) {
     Set<LogEntry> values = HashSet.empty();
-    ObjectReader reader = mapper.readerFor(LogEntry.class);
+    var reader = mapper.readerFor(LogEntry.class);
     try {
       Iterator<LogEntry> iterator = reader.readValues(path.toFile());
       while (iterator.hasNext()) {
