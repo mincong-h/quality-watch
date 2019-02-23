@@ -1,6 +1,5 @@
 package qwatch.logs.command;
 
-import io.vavr.Tuple2;
 import io.vavr.collection.Map;
 import io.vavr.collection.Set;
 import io.vavr.collection.SortedSet;
@@ -10,12 +9,11 @@ import io.vavr.control.Try;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import qwatch.logs.io.LogExporter;
 import qwatch.logs.model.LogEntry;
 import qwatch.logs.util.CsvImporter;
-import qwatch.logs.util.JsonExportUtil;
 import qwatch.logs.util.JsonImportUtil;
 
 /**
@@ -80,23 +78,16 @@ public class CollectCommand implements Command<Void> {
       logger.error(eitherImport.getLeft());
     }
     entries = entries.addAll(eitherImport.get());
-    Try<Void> exportResult = export(entries);
+
+    // Export
+    Map<LocalDate, SortedSet<LogEntry>> entriesByDay =
+        entries
+            .groupBy(entry -> entry.dateTime().toLocalDate())
+            .mapValues(v -> TreeSet.ofAll(LogEntry.BY_DATE, v));
+    Try<Void> exportResult = new LogExporter(destDir).export(entriesByDay);
     if (exportResult.isFailure()) {
       logger.error("Failed to export", exportResult.getCause());
     }
     return null;
-  }
-
-  private Try<Void> export(Set<LogEntry> logEntries) {
-    Map<LocalDate, SortedSet<LogEntry>> entriesByDay =
-        logEntries
-            .groupBy(entry -> entry.dateTime().toLocalDate())
-            .mapValues(v -> TreeSet.ofAll(LogEntry.BY_DATE, v));
-    for (Tuple2<LocalDate, SortedSet<LogEntry>> t : entriesByDay) {
-      String filename = "log." + DateTimeFormatter.ISO_DATE.format(t._1) + ".json";
-      Path path = Paths.get("/Users/mincong/datadog").resolve(filename);
-      JsonExportUtil.export(path, t._2);
-    }
-    return Try.success(null);
   }
 }
