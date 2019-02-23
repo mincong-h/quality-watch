@@ -1,4 +1,4 @@
-package qwatch.logs.util;
+package qwatch.logs.io;
 
 import io.vavr.collection.HashMap;
 import io.vavr.collection.HashSet;
@@ -21,7 +21,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qwatch.logs.ImportCsvTask;
 import qwatch.logs.model.LogEntry;
 
 import static java.nio.charset.StandardCharsets.UTF_8;

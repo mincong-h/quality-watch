@@ -1,4 +1,4 @@
-package qwatch.logs;
+package qwatch.logs.io;
 
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
@@ -8,7 +8,6 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.logs.model.LogEntry;
-import qwatch.logs.util.JsonImportUtil;
 
 /**
  * @author Mincong Huang
@@ -25,7 +24,7 @@ public class ImportJsonTask implements Callable<Set<LogEntry>> {
 
   @Override
   public Set<LogEntry> call() {
-    Try<Set<LogEntry>> tryImport = JsonImportUtil.importLogEntriesFromFile(jsonPath);
+    Try<Set<LogEntry>> tryImport = JsonImporter.importLogEntriesFromFile(jsonPath);
     return tryImport
         .onSuccess(s -> logger.info("{}: {} entries", jsonPath, String.format("%,d", s.size())))
         .onFailure(e -> logger.error(jsonPath + ": failed to import", e))

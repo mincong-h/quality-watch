@@ -1,4 +1,4 @@
-package qwatch.logs;
+package qwatch.logs.io;
 
 import io.vavr.collection.HashSet;
 import io.vavr.collection.List;
@@ -9,7 +9,6 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.logs.model.LogEntry;
-import qwatch.logs.util.CsvImporter;
 
 /**
  * @author Mincong Huang

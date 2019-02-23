@@ -1,4 +1,4 @@
-package qwatch.logs.util;
+package qwatch.logs.io;
 
 import io.vavr.collection.Set;
 import java.nio.file.Files;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Mincong Huang
  * @since 1.0
  */
-public class JsonImportUtilTest {
+public class JsonImporterTest {
   @Rule public TemporaryFolder tempDir = new TemporaryFolder();
 
   private Path json;
@@ -48,7 +48,7 @@ public class JsonImportUtilTest {
   public void importLogEntriesFromFile_noDuplicates() {
     // Given an existing JSON file with duplicates
     // When importing the content
-    Set<LogEntry> logEntries = JsonImportUtil.importLogEntriesFromFile(json).get();
+    Set<LogEntry> logEntries = JsonImporter.importLogEntriesFromFile(json).get();
 
     // Then the content is imported without duplicates
     ZonedDateTime d =
@@ -67,18 +67,18 @@ public class JsonImportUtilTest {
   @Test
   public void importLogEntriesFromFile_notJson() {
     Path nonexistent = tempDir.getRoot().toPath().resolve("nonexistent");
-    assertThat(JsonImportUtil.importLogEntriesFromFile(nonexistent).isFailure()).isTrue();
+    assertThat(JsonImporter.importLogEntriesFromFile(nonexistent).isFailure()).isTrue();
   }
 
   @Test
   public void importLogEntries_noDuplicates() {
-    Set<LogEntry> logEntries = JsonImportUtil.importLogEntries(tempDir.getRoot().toPath()).get();
+    Set<LogEntry> logEntries = JsonImporter.importLogEntries(tempDir.getRoot().toPath()).get();
     assertThat(logEntries).hasSize(1);
   }
 
   @Test
   public void listLogPaths() {
-    Set<Path> logPaths = JsonImportUtil.listLogPaths(tempDir.getRoot().toPath()).get();
+    Set<Path> logPaths = JsonImporter.listLogPaths(tempDir.getRoot().toPath()).get();
     assertThat(logPaths).containsExactly(json);
   }
 }

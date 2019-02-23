@@ -1,4 +1,4 @@
-package qwatch.logs.util;
+package qwatch.logs.io;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -16,8 +16,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qwatch.logs.ImportJsonTask;
 import qwatch.logs.model.LogEntry;
+import qwatch.logs.util.ObjectMapperFactory;
 
 /**
  * Utility class for JSON export.
@@ -25,12 +25,12 @@ import qwatch.logs.model.LogEntry;
  * @author Mincong Huang
  * @since 1.0
  */
-public class JsonImportUtil {
+public class JsonImporter {
 
   private static final ObjectMapper mapper = ObjectMapperFactory.newObjectMapper();
-  private static final Logger logger = LoggerFactory.getLogger(JsonImportUtil.class);
+  private static final Logger logger = LoggerFactory.getLogger(JsonImporter.class);
 
-  public static Try<Set<Path>> listLogPaths(Path dir) {
+  static Try<Set<Path>> listLogPaths(Path dir) {
     Set<Path> paths = HashSet.empty();
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "log*.json")) {
       for (Path csv : stream) {
@@ -86,7 +86,7 @@ public class JsonImportUtil {
     }
   }
 
-  private JsonImportUtil() {
+  private JsonImporter() {
     // Utility class, do not instantiate
   }
 }

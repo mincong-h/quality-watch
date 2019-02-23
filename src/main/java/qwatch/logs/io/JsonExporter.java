@@ -18,16 +18,16 @@ import qwatch.logs.util.ObjectMapperFactory;
  * @author Mincong Huang
  * @since 1.0
  */
-public class LogExporter {
+public class JsonExporter {
 
   private final Path logDir;
   private static final ObjectMapper mapper = ObjectMapperFactory.newObjectMapper();
 
-  public LogExporter(Path logDir) {
+  public JsonExporter(Path logDir) {
     this.logDir = logDir;
   }
 
-  public Try<Void> exportJson(Map<LocalDate, SortedSet<LogEntry>> entriesByDay) {
+  public Try<Void> export(Map<LocalDate, SortedSet<LogEntry>> entriesByDay) {
     for (Tuple2<LocalDate, SortedSet<LogEntry>> t : entriesByDay) {
       String filename = "log." + DateTimeFormatter.ISO_DATE.format(t._1) + ".json";
       Path path = logDir.resolve(filename);

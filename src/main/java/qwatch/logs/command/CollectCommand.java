@@ -11,10 +11,10 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qwatch.logs.io.LogExporter;
+import qwatch.logs.io.JsonExporter;
 import qwatch.logs.model.LogEntry;
-import qwatch.logs.util.CsvImporter;
-import qwatch.logs.util.JsonImportUtil;
+import qwatch.logs.io.CsvImporter;
+import qwatch.logs.io.JsonImporter;
 
 /**
  * Collect command.
@@ -65,7 +65,7 @@ public class CollectCommand implements Command<Void> {
     Set<LogEntry> entries;
 
     // Import existing log entries
-    Try<Set<LogEntry>> tryImport = JsonImportUtil.importLogEntries(destDir);
+    Try<Set<LogEntry>> tryImport = JsonImporter.importLogEntries(destDir);
     if (tryImport.isFailure()) {
       logger.error("Failed to import JSON files", tryImport.getCause());
       return null;
@@ -84,7 +84,7 @@ public class CollectCommand implements Command<Void> {
         entries
             .groupBy(entry -> entry.dateTime().toLocalDate())
             .mapValues(v -> TreeSet.ofAll(LogEntry.BY_DATE, v));
-    Try<Void> exportResult = new LogExporter(destDir).exportJson(entriesByDay);
+    Try<Void> exportResult = new JsonExporter(destDir).export(entriesByDay);
     if (exportResult.isFailure()) {
       logger.error("Failed to export", exportResult.getCause());
     }

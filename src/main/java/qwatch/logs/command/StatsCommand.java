@@ -9,7 +9,7 @@ import java.time.ZonedDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.logs.model.LogEntry;
-import qwatch.logs.util.JsonImportUtil;
+import qwatch.logs.io.JsonImporter;
 import qwatch.logs.util.SummaryExtractor;
 
 /**
@@ -73,7 +73,7 @@ public class StatsCommand implements Command<Void> {
   @Override
   public Void execute() {
     // Import log entries
-    Try<Set<LogEntry>> tryImport = JsonImportUtil.importLogEntries(logDir);
+    Try<Set<LogEntry>> tryImport = JsonImporter.importLogEntries(logDir);
     if (tryImport.isFailure()) {
       logger.error("Failed to import JSON files", tryImport.getCause());
       return null;

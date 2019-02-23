@@ -41,11 +41,11 @@ public class LogExporterTest {
       d1e1.toBuilder().dateTime(LocalDateTime.of(2019, 1, 2, 0, 0, 0).atZone(Z)).build();
   private final LogEntry d2e2 =
       d1e1.toBuilder().dateTime(LocalDateTime.of(2019, 1, 2, 1, 0, 0).atZone(Z)).build();
-  private LogExporter exporter;
+  private JsonExporter exporter;
 
   @Before
   public void setUp() {
-    exporter = new LogExporter(tempFolder.getRoot().toPath());
+    exporter = new JsonExporter(tempFolder.getRoot().toPath());
   }
 
   @Test
@@ -57,7 +57,7 @@ public class LogExporterTest {
         HashMap.of(LocalDate.of(2019, 1, 1), entriesD1, LocalDate.of(2019, 1, 2), entriesD2);
 
     // When exporting them to filesystem
-    exporter.exportJson(entriesByDay);
+    exporter.export(entriesByDay);
 
     // Then the export is successful
     Path pathD1 = tempFolder.getRoot().toPath().resolve("log.2019-01-01.json");
@@ -76,7 +76,7 @@ public class LogExporterTest {
     SortedSet<LogEntry> entriesD1 = TreeSet.of(LogEntry.BY_DATE, d1e1, d1e2);
     Map<LocalDate, SortedSet<LogEntry>> entriesByDay =
         HashMap.of(LocalDate.of(2019, 1, 1), entriesD1);
-    Try<Void> export = exporter.exportJson(entriesByDay);
+    Try<Void> export = exporter.export(entriesByDay);
 
     // Then the json file has been deleted and recreated again
     assertThat(export.isSuccess()).isTrue();
