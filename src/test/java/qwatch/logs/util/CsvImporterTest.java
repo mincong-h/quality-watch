@@ -41,7 +41,7 @@ public class CsvImporterTest {
   public void importLogEntries() {
     // Given a CSV file where 2 log entries are available
     // When importing it
-    List<LogEntry> entries = CsvImporter.importLogEntries(logPath).get().toJavaList();
+    List<LogEntry> entries = CsvImporter.importLogEntriesFromFile(logPath).get().toJavaList();
 
     // Then the import is successful
     // and zone id is 'UTC', same as JSON object mapper

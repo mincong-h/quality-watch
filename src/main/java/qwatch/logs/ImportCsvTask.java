@@ -26,7 +26,7 @@ public class ImportCsvTask implements Callable<Set<LogEntry>> {
 
   @Override
   public Set<LogEntry> call() {
-    Either<String, List<LogEntry>> result = CsvImporter.importLogEntries(csv);
+    Either<String, List<LogEntry>> result = CsvImporter.importLogEntriesFromFile(csv);
     if (result.isRight()) {
       String size = String.format("%,d", result.get().size());
       logger.info("{}: {} entries", csv, size);

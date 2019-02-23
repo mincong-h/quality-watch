@@ -44,14 +44,12 @@ public class JsonImportUtil {
 
   public static Try<Set<LogEntry>> importLogEntries(Path dir) {
     // Find paths
-    Set<Path> paths = HashSet.empty();
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "log*.json")) {
-      for (Path p : stream) {
-        paths = paths.add(p);
-      }
-    } catch (IOException e) {
-      return Try.failure(e);
+    Try<Set<Path>> tryListing = listLogPaths(dir);
+    if (tryListing.isFailure()) {
+      return Try.failure(tryListing.getCause());
     }
+    Set<Path> paths = tryListing.get();
+
     // Import log entries
     Set<LogEntry> entries = HashSet.empty();
     ExecutorService pool = Executors.newWorkStealingPool();

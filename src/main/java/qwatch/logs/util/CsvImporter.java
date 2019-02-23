@@ -1,16 +1,27 @@
 package qwatch.logs.util;
 
 import io.vavr.collection.HashMap;
+import io.vavr.collection.HashSet;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
+import io.vavr.collection.Set;
 import io.vavr.control.Either;
+import io.vavr.control.Try;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import qwatch.logs.ImportCsvTask;
 import qwatch.logs.model.LogEntry;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -22,6 +33,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @since 1.0
  */
 public class CsvImporter {
+  private static final Logger logger = LoggerFactory.getLogger(CsvImporter.class);
 
   private static final String COL_DATE = "date";
   private static final String COL_HOST = "Host";
@@ -30,7 +42,48 @@ public class CsvImporter {
   private static final String COL_STATUS = "Status";
   private static final String[] REQUIRED_COLUMNS = {COL_DATE, COL_HOST, COL_MESSAGE, COL_SERVICE};
 
-  public static Either<String, List<LogEntry>> importLogEntries(Path logPath) {
+  private static Try<Set<Path>> listCsvPaths(Path dir) {
+    Set<Path> paths = HashSet.empty();
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "extract-*.csv")) {
+      for (Path csv : stream) {
+        paths = paths.add(csv);
+      }
+      return Try.success(paths);
+    } catch (IOException e) {
+      return Try.failure(e);
+    }
+  }
+
+  public static Either<String, Set<LogEntry>> importLogEntries(Path dir) {
+    // Find paths
+    Try<Set<Path>> tryListing = listCsvPaths(dir);
+    if (tryListing.isFailure()) {
+      return Either.left(tryListing.getCause().getMessage());
+    }
+    Set<Path> paths = tryListing.get();
+
+    // Import log entries
+    Set<LogEntry> entries = HashSet.empty();
+    ExecutorService pool = Executors.newWorkStealingPool();
+    Set<ImportCsvTask> tasks = paths.map(ImportCsvTask::new).toSet();
+    try {
+      for (Future<Set<LogEntry>> f : pool.invokeAll(tasks.toJavaSet())) {
+        if (!f.isCancelled()) {
+          entries = entries.addAll(f.get());
+        }
+      }
+    } catch (InterruptedException e) {
+      logger.error("Interrupted", e);
+      Thread.currentThread().interrupt();
+    } catch (ExecutionException e) {
+      return Either.left("Failed to get result from future");
+    } finally {
+      pool.shutdownNow();
+    }
+    return Either.right(entries);
+  }
+
+  public static Either<String, List<LogEntry>> importLogEntriesFromFile(Path logPath) {
     String content;
     try {
       content = new String(Files.readAllBytes(logPath), UTF_8);

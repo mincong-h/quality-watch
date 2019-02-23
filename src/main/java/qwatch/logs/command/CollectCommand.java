@@ -1,27 +1,20 @@
 package qwatch.logs.command;
 
 import io.vavr.Tuple2;
-import io.vavr.collection.HashSet;
 import io.vavr.collection.Map;
 import io.vavr.collection.Set;
 import io.vavr.collection.SortedSet;
 import io.vavr.collection.TreeSet;
+import io.vavr.control.Either;
 import io.vavr.control.Try;
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qwatch.logs.ImportCsvTask;
 import qwatch.logs.model.LogEntry;
+import qwatch.logs.util.CsvImporter;
 import qwatch.logs.util.JsonExportUtil;
 import qwatch.logs.util.JsonImportUtil;
 
@@ -82,30 +75,11 @@ public class CollectCommand implements Command<Try<Void>> {
     entries = tryImport.get();
 
     // Import new log entries
-    Set<Path> csvPaths = HashSet.empty();
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(csvDir, "extract-*.csv")) {
-      for (Path csv : stream) {
-        csvPaths = csvPaths.add(csv);
-      }
-    } catch (IOException e) {
-      return Try.failure(e);
+    Either<String, Set<LogEntry>> eitherImport = CsvImporter.importLogEntries(csvDir);
+    if (eitherImport.isLeft()) {
+      logger.error(eitherImport.getLeft());
     }
-    ExecutorService pool = Executors.newWorkStealingPool();
-    Set<ImportCsvTask> csvTasks = csvPaths.map(ImportCsvTask::new).toSet();
-    try {
-      for (Future<Set<LogEntry>> f : pool.invokeAll(csvTasks.toJavaSet())) {
-        if (!f.isCancelled()) {
-          entries = entries.addAll(f.get());
-        }
-      }
-    } catch (InterruptedException e) {
-      logger.error("Interrupted", e);
-      Thread.currentThread().interrupt();
-    } catch (ExecutionException e) {
-      logger.error("Failed to get result from future", e);
-    } finally {
-      pool.shutdownNow();
-    }
+    entries = entries.addAll(eitherImport.get());
     return export(entries);
   }
 
