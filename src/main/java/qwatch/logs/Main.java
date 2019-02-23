@@ -28,6 +28,7 @@ public class Main {
       StatsCommand.newBuilder() //
           .logDir(Paths.get("/Users/mincong/datadog"))
           .topN(n)
+          .days(14)
           .build()
           .execute();
     } else {

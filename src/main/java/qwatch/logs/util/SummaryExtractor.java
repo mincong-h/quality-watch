@@ -1,9 +1,10 @@
 package qwatch.logs.util;
 
+import io.vavr.collection.List;
 import io.vavr.collection.Traversable;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import qwatch.logs.model.LogEntry;
+import qwatch.logs.model.LogSummary;
 
 /**
  * @author Mincong Huang
@@ -17,17 +18,14 @@ public class SummaryExtractor {
     this.logEntries = logEntries;
   }
 
-  public String top(int n) {
-    String list =
-        logEntries
-            .groupBy(LogEntry::summary)
-            .bimap(Function.identity(), Traversable::size)
-            .toStream()
-            .sortBy(t -> t._2 * -1)
-            .take(n)
-            .map(t -> String.format("- %,6d: %s", t._2, t._1))
-            .collect(Collectors.joining("\n"));
-    return "Top " + n + " errors:\n" + list;
+  public List<LogSummary> top(int n) {
+    return logEntries
+        .groupBy(LogEntry::summary)
+        .bimap(Function.identity(), Traversable::size)
+        .toStream()
+        .sortBy(t -> t._2 * -1)
+        .take(n)
+        .map(t -> LogSummary.of(t._2, t._1))
+        .toList();
   }
-
 }

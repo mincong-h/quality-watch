@@ -1,15 +1,18 @@
 package qwatch.logs.command;
 
+import io.vavr.collection.List;
 import io.vavr.collection.Set;
 import io.vavr.collection.SortedSet;
 import io.vavr.control.Try;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qwatch.logs.model.LogEntry;
 import qwatch.logs.io.JsonImporter;
+import qwatch.logs.model.LogEntry;
+import qwatch.logs.model.LogSummary;
 import qwatch.logs.util.SummaryExtractor;
 
 /**
@@ -18,7 +21,7 @@ import qwatch.logs.util.SummaryExtractor;
  * @author Mincong Huang
  * @since 1.0
  */
-public class StatsCommand implements Command<Void> {
+public class StatsCommand implements Command<List<LogSummary>> {
 
   private static final Logger logger = LoggerFactory.getLogger(StatsCommand.class);
   public static final String NAME = "stats";
@@ -30,6 +33,7 @@ public class StatsCommand implements Command<Void> {
   public static class Builder implements CommandBuilder<StatsCommand> {
 
     private int topN;
+    private long days = -1;
     private Path logDir;
 
     /**
@@ -56,6 +60,19 @@ public class StatsCommand implements Command<Void> {
       return this;
     }
 
+    /**
+     * Sets the last N days to be included in the statistics.
+     *
+     * <p>By default, all log entries included.
+     *
+     * @param days the last N days (must be positive)
+     * @return this
+     */
+    public Builder days(long days) {
+      this.days = days;
+      return this;
+    }
+
     @Override
     public StatsCommand build() {
       return new StatsCommand(this);
@@ -63,27 +80,35 @@ public class StatsCommand implements Command<Void> {
   }
 
   private final int topN;
+  private final long days;
   private final Path logDir;
 
   private StatsCommand(Builder builder) {
     this.topN = builder.topN;
+    this.days = builder.days;
     this.logDir = builder.logDir;
   }
 
   @Override
-  public Void execute() {
+  public List<LogSummary> execute() {
     // Import log entries
     Try<Set<LogEntry>> tryImport = JsonImporter.importLogEntries(logDir);
     if (tryImport.isFailure()) {
       logger.error("Failed to import JSON files", tryImport.getCause());
-      return null;
+      return List.empty();
     }
     Set<LogEntry> entries = tryImport.get();
     if (entries.nonEmpty()) {
       SortedSet<LocalDate> dates =
           entries.map(LogEntry::dateTime).map(ZonedDateTime::toLocalDate).toSortedSet();
-      LocalDate start = dates.head();
-      LocalDate end = dates.last();
+      LocalDate end = dates.last(); // inclusive
+      LocalDate start; // inclusive
+      if (days >= 0 && dates.head().isBefore(end.minusDays(days - 1))) {
+        start = end.minusDays(days - 1);
+      } else {
+        start = dates.head();
+      }
+      entries = entries.filter(e -> !e.dateTime().toLocalDate().isBefore(start));
       String size = String.format("%,d", entries.size());
       logger.info("{} entries extracted ({} to {}).", size, start, end);
     } else {
@@ -91,8 +116,12 @@ public class StatsCommand implements Command<Void> {
     }
 
     // Summary
-    String summary = new SummaryExtractor(entries).top(topN);
-    logger.info("{}", summary);
-    return null;
+    List<LogSummary> summaries = new SummaryExtractor(entries).top(topN);
+    String detail =
+        summaries
+            .map(s -> String.format("- %,6d: %s", s.count(), s.description()))
+            .collect(Collectors.joining("\n"));
+    logger.info("Top {} errors:\n{}", summaries.size(), detail);
+    return summaries;
   }
 }

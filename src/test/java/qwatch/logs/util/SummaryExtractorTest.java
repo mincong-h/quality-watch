@@ -1,12 +1,14 @@
 package qwatch.logs.util;
 
 import io.vavr.collection.HashSet;
+import io.vavr.collection.List;
 import io.vavr.collection.Set;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import org.junit.Before;
 import org.junit.Test;
 import qwatch.logs.model.LogEntry;
+import qwatch.logs.model.LogSummary;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,12 +48,7 @@ public class SummaryExtractorTest {
   @Test
   public void top() {
     SummaryExtractor extractor = new SummaryExtractor(entrySet);
-    String summary = extractor.top(2);
-    String[] lines = { //
-      "Top 2 errors:", //
-      "-      2: [   ] a",
-      "-      1: [   ] b"
-    };
-    assertThat(summary).isEqualTo(String.join("\n", lines));
+    List<LogSummary> summaries = extractor.top(2);
+    assertThat(summaries).containsExactly(LogSummary.of(2, "[   ] a"), LogSummary.of(1, "[   ] b"));
   }
 }
