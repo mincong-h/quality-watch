@@ -84,7 +84,7 @@ public class CollectCommand implements Command<Void> {
         entries
             .groupBy(entry -> entry.dateTime().toLocalDate())
             .mapValues(v -> TreeSet.ofAll(LogEntry.BY_DATE, v));
-    Try<Void> exportResult = new LogExporter(destDir).export(entriesByDay);
+    Try<Void> exportResult = new LogExporter(destDir).exportJson(entriesByDay);
     if (exportResult.isFailure()) {
       logger.error("Failed to export", exportResult.getCause());
     }
