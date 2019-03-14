@@ -13,7 +13,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <!-- dependencies -->
+    <!-- Dependencies -->
     <auto.value.version>1.6.2</auto.value.version>
     <jackson.version>2.9.8</jackson.version>
     <jaxrs.version>2.1.1</jaxrs.version>
@@ -22,11 +22,10 @@
     <slf4j.version>1.7.25</slf4j.version>
     <vavr.version>0.9.2</vavr.version>
     <selenium.version>3.14.0</selenium.version>
-    <!-- test dependencies -->
     <junit.version>4.12</junit.version>
     <assertj.version>3.11.1</assertj.version>
 
-    <!-- plugins -->
+    <!-- Plugins -->
     <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
     <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
     <maven-surefire-plugin.version>3.0.0-M2</maven-surefire-plugin.version>
@@ -34,11 +33,12 @@
 
   <modules>
     <module>qwatch-logs</module>
+    <module>qwatch-jenkins</module>
   </modules>
 
   <dependencyManagement>
     <dependencies>
-      <!-- Dependencies -->
+      <!-- Source Dependencies -->
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
@@ -90,7 +90,7 @@
         <artifactId>slf4j-log4j12</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
-      <!-- Test dependencies -->
+      <!-- Test Dependencies -->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
