@@ -12,7 +12,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import qwatch.jenkins.model.SurefireTestSuite;
+import qwatch.jenkins.model.TestSuite;
 import qwatch.jenkins.util.ObjectMapperFactory;
 
 /**
@@ -56,7 +56,7 @@ public class JenkinsStatsCommand {
 
   /** Executes the statistics command. */
   public void execute() {
-    Set<SurefireTestSuite> suites = HashSet.empty();
+    Set<TestSuite> suites = HashSet.empty();
     logger.info("buildDir: {}", buildDir);
     java.util.Set<Path> paths = new java.util.HashSet<>();
     try {
@@ -68,7 +68,7 @@ public class JenkinsStatsCommand {
               var fileName = path.getFileName().toString();
               var dirName = path.getParent().getFileName().toString();
               if (!attrs.isDirectory()
-                  && dirName.equals("surefire-reports")
+                  && (dirName.equals("surefire-reports") || dirName.equals("failsafe-reports"))
                   && fileName.startsWith("TEST-")
                   && fileName.endsWith(".xml")) {
                 paths.add(path);
@@ -77,13 +77,17 @@ public class JenkinsStatsCommand {
             }
           });
       for (var xml : paths) {
-        var s = mapper.readValue(xml.toFile(), SurefireTestSuite.class);
-        suites = suites.add(s);
+        try {
+          var s = mapper.readValue(xml.toFile(), TestSuite.class);
+          suites = suites.add(s);
+        } catch (IOException e2) {
+          logger.error("Failed to parse file " + xml, e2);
+        }
       }
     } catch (IOException e) {
       logger.error("Failed to list files from " + buildDir, e);
     }
-    for (var s : suites.toSortedSet(Comparator.comparing(SurefireTestSuite::name))) {
+    for (var s : suites.toSortedSet(Comparator.comparing(TestSuite::name))) {
       if (logger.isInfoEnabled()) {
         var str =
             String.format(

@@ -41,7 +41,7 @@ public class Main {
     } else if (JenkinsStatsCommand.NAME.equals(command)) {
       logger.info("Received command '{}'", command);
       JenkinsStatsCommand.newBuilder() //
-          .buildDir(Paths.get("/Users/mincong/jenkins/artifacts/nos-ondemand-mhuang.113/studio/nuxeo-studio-core/target/surefire-reports"))
+          .buildDir(Paths.get("/Users/mincong/jenkins/artifacts/nos-ondemand-mhuang.113"))
           .build()
           .execute();
     } else {

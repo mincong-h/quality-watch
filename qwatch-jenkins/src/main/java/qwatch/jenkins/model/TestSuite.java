@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.google.auto.value.AutoValue;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -13,11 +14,11 @@ import java.util.Set;
  */
 @AutoValue
 @JacksonXmlRootElement(localName = "testsuite")
-@JsonDeserialize(builder = AutoValue_SurefireTestSuite.Builder.class)
-public abstract class SurefireTestSuite {
+@JsonDeserialize(builder = AutoValue_TestSuite.Builder.class)
+public abstract class TestSuite {
 
   public static Builder newBuilder() {
-    return new AutoValue_SurefireTestSuite.Builder();
+    return new AutoValue_TestSuite.Builder();
   }
 
   /* ---------- Attributes ---------- */
@@ -44,11 +45,15 @@ public abstract class SurefireTestSuite {
 
   @JacksonXmlElementWrapper
   @JacksonXmlProperty(localName = "properties")
-  public abstract Set<SurefireProperty> properties();
+  public abstract Set<TestProperty> properties();
+
+  public Set<TestCase> testCases() {
+    return optTestCases().orElse(Set.of());
+  }
 
   @JacksonXmlElementWrapper(useWrapping = false)
   @JacksonXmlProperty(localName = "testcase")
-  public abstract Set<SurefireTestCase> testCases();
+  abstract Optional<Set<TestCase>> optTestCases();
 
   @AutoValue.Builder
   public abstract static class Builder {
@@ -77,20 +82,31 @@ public abstract class SurefireTestSuite {
 
     @JacksonXmlElementWrapper
     @JacksonXmlProperty(localName = "properties")
-    public abstract Builder properties(Set<SurefireProperty> properties);
+    public abstract Builder properties(Set<TestProperty> properties);
 
-    public Builder properties(SurefireProperty... properties) {
+    public Builder properties(TestProperty... properties) {
       return properties(Set.of(properties));
     }
 
+    public abstract Builder optTestCases(Optional<Set<TestCase>> testCases);
+
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "testcase")
-    public abstract Builder testCases(Set<SurefireTestCase> testCases);
+    public Builder testCases(Set<TestCase> testCases) {
+      return optTestCases(Optional.of(testCases));
+    }
 
-    public Builder testCases(SurefireTestCase... testCases) {
+    public Builder testCases(TestCase... testCases) {
       return testCases(Set.of(testCases));
     }
 
-    public abstract SurefireTestSuite build();
+    abstract Optional<Set<TestCase>> optTestCases();
+
+    abstract TestSuite autoBuild();
+
+    public TestSuite build() {
+      testCases(optTestCases().orElse(Set.of()));
+      return autoBuild();
+    }
   }
 }

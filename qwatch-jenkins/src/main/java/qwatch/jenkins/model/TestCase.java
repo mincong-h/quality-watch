@@ -9,11 +9,11 @@ import com.google.auto.value.AutoValue;
  * @since 1.0
  */
 @AutoValue
-@JsonDeserialize(builder = AutoValue_SurefireTestCase.Builder.class)
-public abstract class SurefireTestCase {
+@JsonDeserialize(builder = AutoValue_TestCase.Builder.class)
+public abstract class TestCase {
 
   public static Builder newBuilder() {
-    return new AutoValue_SurefireTestCase.Builder();
+    return new AutoValue_TestCase.Builder();
   }
 
   @JacksonXmlProperty(isAttribute = true, localName = "name")
@@ -37,6 +37,6 @@ public abstract class SurefireTestCase {
     @JacksonXmlProperty(isAttribute = true, localName = "time")
     public abstract Builder time(double time);
 
-    public abstract SurefireTestCase build();
+    public abstract TestCase build();
   }
 }

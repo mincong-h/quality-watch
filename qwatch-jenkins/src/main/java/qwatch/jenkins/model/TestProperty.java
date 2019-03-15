@@ -11,11 +11,11 @@ import com.google.auto.value.AutoValue;
  */
 @AutoValue
 @JacksonXmlRootElement(localName = "property")
-@JsonDeserialize(builder = AutoValue_SurefireProperty.Builder.class)
-public abstract class SurefireProperty {
+@JsonDeserialize(builder = AutoValue_TestProperty.Builder.class)
+public abstract class TestProperty {
 
-  public static SurefireProperty of(String name, String value) {
-    return new AutoValue_SurefireProperty.Builder().name(name).value(value).build();
+  public static TestProperty of(String name, String value) {
+    return new AutoValue_TestProperty.Builder().name(name).value(value).build();
   }
 
   @JacksonXmlProperty(isAttribute = true, localName = "name")
@@ -33,6 +33,6 @@ public abstract class SurefireProperty {
     @JacksonXmlProperty(isAttribute = true, localName = "value")
     public abstract Builder value(String value);
 
-    public abstract SurefireProperty build();
+    public abstract TestProperty build();
   }
 }
