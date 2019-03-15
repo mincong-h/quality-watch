@@ -1,4 +1,4 @@
-package qwatch.logs;
+package qwatch;
 
 import java.nio.file.Paths;
 import org.slf4j.Logger;
@@ -6,6 +6,10 @@ import org.slf4j.LoggerFactory;
 import qwatch.logs.command.CollectCommand;
 import qwatch.logs.command.StatsCommand;
 
+/**
+ * @author Mincong Huang
+ * @since 1.0
+ */
 public class Main {
 
   private static final Logger logger = LoggerFactory.getLogger(Main.class);
