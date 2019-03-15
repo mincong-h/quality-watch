@@ -5,9 +5,6 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.google.auto.value.AutoValue;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -45,9 +42,13 @@ public abstract class SurefireTestSuite {
 
   /* ---------- Elements ---------- */
 
+  @JacksonXmlElementWrapper
+  @JacksonXmlProperty(localName = "properties")
+  public abstract Set<SurefireProperty> properties();
+
   @JacksonXmlElementWrapper(useWrapping = false)
   @JacksonXmlProperty(localName = "testcase")
-  public abstract List<SurefireTestCase> testCases();
+  public abstract Set<SurefireTestCase> testCases();
 
   @AutoValue.Builder
   public abstract static class Builder {
@@ -74,12 +75,20 @@ public abstract class SurefireTestSuite {
 
     /* ---------- Elements ---------- */
 
+    @JacksonXmlElementWrapper
+    @JacksonXmlProperty(localName = "properties")
+    public abstract Builder properties(Set<SurefireProperty> properties);
+
+    public Builder properties(SurefireProperty... properties) {
+      return properties(Set.of(properties));
+    }
+
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "testcase")
     public abstract Builder testCases(Set<SurefireTestCase> testCases);
 
     public Builder testCases(SurefireTestCase... testCases) {
-      return testCases(new HashSet<>(Arrays.asList(testCases)));
+      return testCases(Set.of(testCases));
     }
 
     public abstract SurefireTestSuite build();

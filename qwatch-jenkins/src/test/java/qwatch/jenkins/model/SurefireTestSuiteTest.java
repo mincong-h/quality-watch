@@ -1,5 +1,6 @@
 package qwatch.jenkins.model;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import java.io.StringWriter;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SuppressWarnings("squid:S1192") // repeated string literals
 public class SurefireTestSuiteTest {
+
+  private final XmlMapper mapper = ObjectMapperFactory.newXmlMapper();
 
   private String xml;
 
@@ -52,9 +55,10 @@ public class SurefireTestSuiteTest {
 
   @Test
   public void deserialization() throws Exception {
-    var mapper = ObjectMapperFactory.newXmlMapper();
     var actualSuite = mapper.readValue(xml.getBytes(UTF_8), SurefireTestSuite.class);
 
+    var p1 = SurefireProperty.of("sun.io.unicode.encoding", "UnicodeLittle");
+    var p2 = SurefireProperty.of("java.class.version", "52.0");
     var c1 =
         SurefireTestCase.newBuilder()
             .name("getHistoryMultiplePages")
@@ -75,6 +79,7 @@ public class SurefireTestSuiteTest {
             .errorCount(0)
             .skippedCount(0)
             .failureCount(0)
+            .properties(p1, p2)
             .testCases(c1, c2)
             .build();
     assertThat(actualSuite).isEqualTo(expectedSuite);
@@ -82,7 +87,7 @@ public class SurefireTestSuiteTest {
 
   @Test
   public void serialization() throws Exception {
-    var mapper = ObjectMapperFactory.newXmlMapper();
+    var prop = SurefireProperty.of("key", "val");
     var tc = SurefireTestCase.newBuilder().name("n").className("c").time(0.1).build();
     var suite =
         SurefireTestSuite.newBuilder()
@@ -92,13 +97,14 @@ public class SurefireTestSuiteTest {
             .errorCount(0)
             .skippedCount(0)
             .failureCount(0)
+            .properties(prop)
             .testCases(tc)
             .build();
     try (var writer = new StringWriter()) {
       mapper.writeValue(writer, suite);
       // language=XML
       var s =
-          "<testsuite name=\"MyTest\" time=\"2.0\" tests=\"2\" errors=\"0\" skipped=\"0\" failures=\"0\"><testcase name=\"n\" classname=\"c\" time=\"0.1\"/></testsuite>";
+          "<testsuite name=\"MyTest\" time=\"2.0\" tests=\"2\" errors=\"0\" skipped=\"0\" failures=\"0\"><properties><properties name=\"key\" value=\"val\"/></properties><testcase name=\"n\" classname=\"c\" time=\"0.1\"/></testsuite>";
       assertThat(writer.toString()).isEqualTo(s);
     }
   }
