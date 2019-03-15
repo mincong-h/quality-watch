@@ -23,12 +23,56 @@ public abstract class SurefireTestSuite {
     return new AutoValue_SurefireTestSuite.Builder();
   }
 
+  /* ---------- Attributes ---------- */
+
+  @JacksonXmlProperty(localName = "name", isAttribute = true)
+  public abstract String name();
+
+  @JacksonXmlProperty(localName = "time", isAttribute = true)
+  public abstract double time();
+
+  @JacksonXmlProperty(localName = "tests", isAttribute = true)
+  public abstract int testCount();
+
+  @JacksonXmlProperty(localName = "errors", isAttribute = true)
+  public abstract int errorCount();
+
+  @JacksonXmlProperty(localName = "skipped", isAttribute = true)
+  public abstract int skippedCount();
+
+  @JacksonXmlProperty(localName = "failures", isAttribute = true)
+  public abstract int failureCount();
+
+  /* ---------- Elements ---------- */
+
   @JacksonXmlElementWrapper(useWrapping = false)
   @JacksonXmlProperty(localName = "testcase")
   public abstract List<SurefireTestCase> testCases();
 
   @AutoValue.Builder
   public abstract static class Builder {
+
+    /* ---------- Attributes ---------- */
+
+    @JacksonXmlProperty(localName = "name", isAttribute = true)
+    public abstract Builder name(String name);
+
+    @JacksonXmlProperty(localName = "time", isAttribute = true)
+    public abstract Builder time(double time);
+
+    @JacksonXmlProperty(localName = "tests", isAttribute = true)
+    public abstract Builder testCount(int testCount);
+
+    @JacksonXmlProperty(localName = "errors", isAttribute = true)
+    public abstract Builder errorCount(int errorCount);
+
+    @JacksonXmlProperty(localName = "skipped", isAttribute = true)
+    public abstract Builder skippedCount(int skippedCount);
+
+    @JacksonXmlProperty(localName = "failures", isAttribute = true)
+    public abstract Builder failureCount(int failureCount);
+
+    /* ---------- Elements ---------- */
 
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "testcase")

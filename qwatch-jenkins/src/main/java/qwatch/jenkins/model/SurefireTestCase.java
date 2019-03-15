@@ -2,7 +2,6 @@ package qwatch.jenkins.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.google.auto.value.AutoValue;
 
 /**
@@ -10,7 +9,6 @@ import com.google.auto.value.AutoValue;
  * @since 1.0
  */
 @AutoValue
-//@JacksonXmlRootElement(localName = "testcase")
 @JsonDeserialize(builder = AutoValue_SurefireTestCase.Builder.class)
 public abstract class SurefireTestCase {
 

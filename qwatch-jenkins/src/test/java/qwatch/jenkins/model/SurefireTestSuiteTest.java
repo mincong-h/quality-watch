@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Mincong Huang
  * @since 1.0
  */
+@SuppressWarnings("squid:S1192") // repeated string literals
 public class SurefireTestSuiteTest {
 
   private String xml;
@@ -23,7 +24,7 @@ public class SurefireTestSuiteTest {
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<testsuite\n"
             + "  version=\"3.0\"\n"
-            + "  name=\"com.nuxeo.studio.api.BranchServiceTest\"\n"
+            + "  name=\"pkg.BranchServiceTest\"\n"
             + "  time=\"231.307\"\n"
             + "  tests=\"30\"\n"
             + "  errors=\"0\"\n"
@@ -40,11 +41,11 @@ public class SurefireTestSuiteTest {
             + "  </properties>\n"
             + "  <testcase\n"
             + "    name=\"getHistoryMultiplePages\"\n"
-            + "    classname=\"com.nuxeo.studio.api.BranchServiceTest\"\n"
+            + "    classname=\"pkg.BranchServiceTest\"\n"
             + "    time=\"1.121\"/>\n"
             + "  <testcase\n"
             + "    name=\"getHistoryProjectNonExisting\"\n"
-            + "    classname=\"com.nuxeo.studio.api.BranchServiceTest\"\n"
+            + "    classname=\"pkg.BranchServiceTest\"\n"
             + "    time=\"0.036\"/>\n"
             + "</testsuite>";
   }
@@ -52,32 +53,52 @@ public class SurefireTestSuiteTest {
   @Test
   public void deserialization() throws Exception {
     var mapper = ObjectMapperFactory.newXmlMapper();
-    var suite = mapper.readValue(xml.getBytes(UTF_8), SurefireTestSuite.class);
+    var actualSuite = mapper.readValue(xml.getBytes(UTF_8), SurefireTestSuite.class);
 
     var c1 =
         SurefireTestCase.newBuilder()
             .name("getHistoryMultiplePages")
-            .className("com.nuxeo.studio.api.BranchServiceTest")
+            .className("pkg.BranchServiceTest")
             .time(1.121)
             .build();
     var c2 =
         SurefireTestCase.newBuilder()
             .name("getHistoryProjectNonExisting")
-            .className("com.nuxeo.studio.api.BranchServiceTest")
+            .className("pkg.BranchServiceTest")
             .time(0.036)
             .build();
-    assertThat(suite.testCases()).containsExactly(c1, c2);
+    var expectedSuite =
+        SurefireTestSuite.newBuilder()
+            .name("pkg.BranchServiceTest")
+            .time(231.307)
+            .testCount(30)
+            .errorCount(0)
+            .skippedCount(0)
+            .failureCount(0)
+            .testCases(c1, c2)
+            .build();
+    assertThat(actualSuite).isEqualTo(expectedSuite);
   }
 
   @Test
   public void serialization() throws Exception {
     var mapper = ObjectMapperFactory.newXmlMapper();
     var tc = SurefireTestCase.newBuilder().name("n").className("c").time(0.1).build();
-    var suite = SurefireTestSuite.newBuilder().testCases(tc).build();
+    var suite =
+        SurefireTestSuite.newBuilder()
+            .name("MyTest")
+            .time(2.0)
+            .testCount(2)
+            .errorCount(0)
+            .skippedCount(0)
+            .failureCount(0)
+            .testCases(tc)
+            .build();
     try (var writer = new StringWriter()) {
       mapper.writeValue(writer, suite);
       // language=XML
-      var s = "<testsuite><testcase name=\"n\" classname=\"c\" time=\"0.1\"/></testsuite>";
+      var s =
+          "<testsuite name=\"MyTest\" time=\"2.0\" tests=\"2\" errors=\"0\" skipped=\"0\" failures=\"0\"><testcase name=\"n\" classname=\"c\" time=\"0.1\"/></testsuite>";
       assertThat(writer.toString()).isEqualTo(s);
     }
   }
