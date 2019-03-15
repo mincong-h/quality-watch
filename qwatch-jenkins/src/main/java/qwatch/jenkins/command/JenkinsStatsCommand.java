@@ -85,12 +85,11 @@ public class JenkinsStatsCommand {
     }
     for (var s : suites.toSortedSet(Comparator.comparing(SurefireTestSuite::name))) {
       if (logger.isInfoEnabled()) {
-        logger.info(
-            "{} (✅: {}, 💥: {}, ❄️: {})",
-            s.name(),
-            s.testCount(),
-            s.failureCount(),
-            s.skippedCount());
+        var str =
+            String.format(
+                "✅ %2d, 💥 %2d, ❄️ %2d - %s (%.2f s)",
+                s.testCount(), s.failureCount(), s.skippedCount(), s.name(), s.time());
+        logger.info(str);
       }
     }
   }
