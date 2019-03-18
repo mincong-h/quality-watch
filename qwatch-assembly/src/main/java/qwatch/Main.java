@@ -41,7 +41,7 @@ public class Main {
     } else if (JenkinsStatsCommand.NAME.equals(command)) {
       logger.info("Received command '{}'", command);
       JenkinsStatsCommand.newBuilder() //
-          .buildDir(Paths.get("/Users/mincong/jenkins/artifacts/nos-ondemand-mhuang.113"))
+          .buildDir(Paths.get("/Users/mincong/jenkins/jenkins-artifacts/nos-master.270"))
           .build()
           .execute();
     } else {
