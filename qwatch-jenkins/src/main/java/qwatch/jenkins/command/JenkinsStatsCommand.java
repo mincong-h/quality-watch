@@ -12,6 +12,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import qwatch.jenkins.actor.TestSummarizer;
 import qwatch.jenkins.model.TestSuite;
 import qwatch.jenkins.util.ObjectMapperFactory;
 
@@ -96,5 +97,7 @@ public class JenkinsStatsCommand {
         logger.info(str);
       }
     }
+    var pkgSummary = TestSummarizer.createSummaryPerPackage(suites);
+    logger.info("Summary:\n{}", pkgSummary);
   }
 }
