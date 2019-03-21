@@ -449,8 +449,31 @@ public enum BuiltinLogPattern implements LogPattern {
     public String shortMsg() {
       return "REST request to Jira: 400";
     }
+  },
+
+  /**
+   * Error while fetching stats.
+   *
+   * <p>No instance found for CLID: ${clid}
+   */
+  ERROR_FETCHING_STATUS(26) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Error while fetching status$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Error while fetching status";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Error while fetching status";
+    }
   };
 
+  private static String NOT_IMPLEMENTED = "Should be implemented by enum element";
   private final int id;
 
   BuiltinLogPattern(int id) {
@@ -464,16 +487,16 @@ public enum BuiltinLogPattern implements LogPattern {
 
   @Override
   public Pattern pattern() {
-    throw new UnsupportedOperationException("Should be implemented by enum element");
+    throw new UnsupportedOperationException(NOT_IMPLEMENTED);
   }
 
   @Override
   public String longMsg() {
-    throw new UnsupportedOperationException("Should be implemented by enum element");
+    throw new UnsupportedOperationException(NOT_IMPLEMENTED);
   }
 
   @Override
   public String shortMsg() {
-    throw new UnsupportedOperationException("Should be implemented by enum element");
+    throw new UnsupportedOperationException(NOT_IMPLEMENTED);
   }
 }
