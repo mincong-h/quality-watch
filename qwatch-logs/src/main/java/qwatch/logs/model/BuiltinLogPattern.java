@@ -471,9 +471,60 @@ public enum BuiltinLogPattern implements LogPattern {
     public String shortMsg() {
       return "Error while fetching status";
     }
+  },
+
+  CANNOT_PULL_WIP_BRANCH(27) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^(.*): Could not pull WIP branch (.) because it has WIP commit$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Could not pull WIP branch ${ref} because it has WIP commit";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Could not pull WIP branch";
+    }
+  },
+
+  WORKSPACE_STREAM_CLOSED(28) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^(.*): (.*): Stream closed\\.$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "${gitPath}: Stream closed.";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "${gitPath}: Stream closed.";
+    }
+  },
+
+  UNCAUGHT_ERROR_ON_THREAD(29) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Uncaught error on thread (.*)$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Uncaught error on thread ${thread}";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Uncaught error on thread ${thread}";
+    }
   };
 
-  private static String NOT_IMPLEMENTED = "Should be implemented by enum element";
+  private static final String NOT_IMPLEMENTED = "Should be implemented by enum element";
   private final int id;
 
   BuiltinLogPattern(int id) {
