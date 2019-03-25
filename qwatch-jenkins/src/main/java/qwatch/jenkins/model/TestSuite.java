@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
+ * Model class for test-suites created by Maven Surefire Plugin and Maven Failsafe Plugin.
+ *
  * @author Mincong Huang
  * @since 1.0
  */

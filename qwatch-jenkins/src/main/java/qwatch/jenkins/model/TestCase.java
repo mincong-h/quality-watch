@@ -5,6 +5,8 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.google.auto.value.AutoValue;
 
 /**
+ * Model class for test-cases created by Maven Surefire Plugin and Maven Failsafe Plugin.
+ *
  * @author Mincong Huang
  * @since 1.0
  */
@@ -24,6 +26,20 @@ public abstract class TestCase {
 
   @JacksonXmlProperty(isAttribute = true, localName = "time")
   public abstract double time();
+
+  /**
+   * Creates an enriched test case instance with job name and execution id.
+   *
+   * @param jobName the Jenkins job name
+   * @param jobExecutionId the Jenkins job execution id
+   * @return an enriched test case
+   */
+  public EnrichedTestCase enrichWith(String jobName, int jobExecutionId) {
+    return EnrichedTestCase.newBuilder(this)
+        .jobName(jobName)
+        .jobExecutionId(jobExecutionId)
+        .build();
+  }
 
   @AutoValue.Builder
   public abstract static class Builder {

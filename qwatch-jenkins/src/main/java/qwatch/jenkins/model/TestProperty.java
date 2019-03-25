@@ -6,6 +6,8 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.google.auto.value.AutoValue;
 
 /**
+ * Model class for test-property created by Maven Surefire Plugin and Maven Failsafe Plugin.
+ *
  * @author Mincong Huang
  * @since 1.0
  */
