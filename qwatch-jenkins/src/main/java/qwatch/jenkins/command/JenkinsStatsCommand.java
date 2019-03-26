@@ -1,20 +1,12 @@
 package qwatch.jenkins.command;
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import io.vavr.collection.HashSet;
-import io.vavr.collection.Set;
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import qwatch.jenkins.actor.TestSuiteImporter;
 import qwatch.jenkins.actor.TestSummarizer;
 import qwatch.jenkins.model.TestSuite;
-import qwatch.jenkins.util.ObjectMapperFactory;
 
 /**
  * @author Mincong Huang
@@ -48,7 +40,6 @@ public class JenkinsStatsCommand {
     }
   }
 
-  private final XmlMapper mapper = ObjectMapperFactory.newXmlMapper();
   private final Path buildDir;
 
   private JenkinsStatsCommand(Builder builder) {
@@ -57,37 +48,12 @@ public class JenkinsStatsCommand {
 
   /** Executes the statistics command. */
   public void execute() {
-    Set<TestSuite> suites = HashSet.empty();
     logger.info("buildDir: {}", buildDir);
-    java.util.Set<Path> paths = new java.util.HashSet<>();
-    try {
-      Files.walkFileTree(
-          buildDir,
-          new SimpleFileVisitor<>() {
-            @Override
-            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
-              var fileName = path.getFileName().toString();
-              var dirName = path.getParent().getFileName().toString();
-              if (!attrs.isDirectory()
-                  && (dirName.equals("surefire-reports") || dirName.equals("failsafe-reports"))
-                  && fileName.startsWith("TEST-")
-                  && fileName.endsWith(".xml")) {
-                paths.add(path);
-              }
-              return FileVisitResult.CONTINUE;
-            }
-          });
-      for (var xml : paths) {
-        try {
-          var s = mapper.readValue(xml.toFile(), TestSuite.class);
-          suites = suites.add(s);
-        } catch (IOException e2) {
-          logger.error("Failed to parse file " + xml, e2);
-        }
-      }
-    } catch (IOException e) {
-      logger.error("Failed to list files from " + buildDir, e);
+    var eitherImport = TestSuiteImporter.importSuites(buildDir);
+    if (eitherImport.isLeft()) {
+      return;
     }
+    var suites = eitherImport.get();
     for (var s : suites.toSortedSet(Comparator.comparing(TestSuite::name))) {
       if (logger.isInfoEnabled()) {
         var str =
