@@ -1,13 +1,14 @@
 package qwatch.jenkins.actor;
 
+import io.vavr.collection.List;
 import io.vavr.collection.SortedSet;
 import io.vavr.control.Either;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import qwatch.jenkins.model.EnrichedTestCase;
 
+import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
@@ -15,19 +16,19 @@ import static java.nio.file.StandardOpenOption.WRITE;
  * @author Mincong Huang
  * @since 1.0
  */
-public class TestCaseExporter {
+public class CsvTestCaseExporter {
 
   private final Path dataDir;
 
-  TestCaseExporter(Path dataDir) {
+  public CsvTestCaseExporter(Path dataDir) {
     this.dataDir = dataDir;
   }
 
-  Either<String, Void> export(SortedSet<EnrichedTestCase> testCases) {
+  public Either<String, Void> export(SortedSet<EnrichedTestCase> testCases) {
     var lines = List.of("\"jobName\",\"jobId\",\"class\",\"name\",\"time\"");
-    lines.addAll(testCases.map(this::toRow).toJavaList());
+    lines = lines.appendAll(testCases.map(this::toRow));
     try {
-      Files.write(dataDir.resolve("executions.csv"), lines, WRITE, TRUNCATE_EXISTING);
+      Files.write(dataDir.resolve("executions.csv"), lines, CREATE, TRUNCATE_EXISTING);
     } catch (IOException e) {
       return Either.left(e.getMessage());
     }
