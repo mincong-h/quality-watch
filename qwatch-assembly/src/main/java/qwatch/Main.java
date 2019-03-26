@@ -48,7 +48,7 @@ public class Main {
     } else if (JenkinsExportCommand.NAME.equals(command)) {
       logger.info("Received command '{}'", command);
       JenkinsExportCommand.newBuilder()
-          .buildDir(Paths.get("/Users/mincong/jenkins/jenkins-artifacts/nos-master.270"))
+          .buildDir(Paths.get("/Users/mincong/jenkins/jenkins-artifacts"))
           .exportDir(Paths.get("/Users/mincong/jenkins/jenkins-database"))
           .build()
           .execute();

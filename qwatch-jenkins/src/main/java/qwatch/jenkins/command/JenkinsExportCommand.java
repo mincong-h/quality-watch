@@ -1,7 +1,8 @@
 package qwatch.jenkins.command;
 
-import io.vavr.collection.HashSet;
-import io.vavr.collection.Set;
+import io.vavr.collection.TreeSet;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,6 @@ public class JenkinsExportCommand {
     }
   }
 
-
   private final Path artifactDir;
   private final Path exportDir;
 
@@ -68,37 +68,46 @@ public class JenkinsExportCommand {
   public void execute() {
     logger.info("artifactDir: {}", artifactDir);
     logger.info("exportDir: {}", exportDir);
-    var eitherImport = TestSuiteImporter.importSuites(artifactDir);
-    if (eitherImport.isLeft()) {
+
+    // Collect
+    var suites = new java.util.HashSet<EnrichedTestCase>();
+    try (var execDirs = Files.newDirectoryStream(artifactDir, "nos-*")) {
+      for (var dir : execDirs) {
+        var result = TestSuiteImporter.importSuites(dir);
+        if (result.isLeft()) {
+          logger.error(result.getLeft());
+        } else {
+          // Transform
+          logger.info("Processing {}", dir);
+          var parts = dir.getFileName().toString().split("\\.");
+          var jobName = parts[0];
+          var jobId = Integer.parseInt(parts[1]);
+          result
+              .get()
+              .flatMap(TestSuite::testCases)
+              .map(t -> t.enrichWith(jobName, jobId))
+              .forEach(suites::add);
+        }
+      }
+    } catch (IOException e) {
+      logger.error("Failed to list files in directory " + artifactDir, e);
       return;
     }
-    var suites = eitherImport.get();
-    // Transform TestSuite to EnrichedTestCase
-    var filename = artifactDir.getFileName().toString();
-    logger.info("filename {}", filename);
-    var tokens = filename.split("\\.");
-    var jobName = tokens[0];
-    var jobId = Integer.parseInt(tokens[1]);
-    Set<EnrichedTestCase> enrichedSet = HashSet.empty();
-    for (var s : suites) {
-      enrichedSet = enrichedSet.addAll(toEnrichedTestCase(s, jobName, jobId));
-    }
+
+    // Export
     CsvTestCaseExporter exporter = new CsvTestCaseExporter(exportDir);
     var sorted =
-        enrichedSet.toSortedSet(
-            comparing(EnrichedTestCase::jobName)
-                .thenComparing(EnrichedTestCase::jobExecutionId)
-                .thenComparing(EnrichedTestCase::className)
-                .thenComparing(EnrichedTestCase::name));
+        TreeSet.of(
+                comparing(EnrichedTestCase::jobName)
+                    .thenComparing(EnrichedTestCase::jobExecutionId)
+                    .thenComparing(EnrichedTestCase::className)
+                    .thenComparing(EnrichedTestCase::name))
+            .addAll(suites);
     var result = exporter.export(sorted);
     if (result.isRight()) {
-      logger.info("Exportation succeed. Exported {} lines.", enrichedSet.size());
+      logger.info("Exportation succeed. Exported {} lines.", sorted.size());
     } else {
       logger.error("Exportation failed. Cause: {}", result.getLeft());
     }
-  }
-
-  Set<EnrichedTestCase> toEnrichedTestCase(TestSuite s, String jobName, int jobId) {
-    return HashSet.ofAll(s.testCases()).map(t -> t.enrichWith(jobName, jobId));
   }
 }
