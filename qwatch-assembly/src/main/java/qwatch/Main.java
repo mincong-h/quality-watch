@@ -4,7 +4,6 @@ import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.jenkins.command.JenkinsExportCommand;
-import qwatch.jenkins.command.JenkinsStatsCommand;
 import qwatch.logs.command.CollectCommand;
 import qwatch.logs.command.StatsCommand;
 
@@ -37,12 +36,6 @@ public class Main {
           .logDir(Paths.get("/Users/mincong/datadog"))
           .topN(n)
           .days(14)
-          .build()
-          .execute();
-    } else if (JenkinsStatsCommand.NAME.equals(command)) {
-      logger.info("Received command '{}'", command);
-      JenkinsStatsCommand.newBuilder() //
-          .buildDir(Paths.get("/Users/mincong/jenkins/jenkins-artifacts/nos-master.270"))
           .build()
           .execute();
     } else if (JenkinsExportCommand.NAME.equals(command)) {
