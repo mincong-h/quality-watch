@@ -12,6 +12,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import qwatch.jenkins.model.EnrichedTestCase;
 import qwatch.jenkins.model.TestSuite;
 import qwatch.jenkins.util.ObjectMapperFactory;
 
@@ -32,8 +33,11 @@ public class TestSuiteImporter {
    * @param executionDir Jenkins build execution directory
    * @return either failure or a set of test-suites
    */
-  public static Either<String, Set<TestSuite>> importSuites(Path executionDir) {
+  public static Either<String, Set<EnrichedTestCase>> importTestCases(Path executionDir) {
     var xmlPaths = new java.util.HashSet<Path>();
+    var parts = executionDir.getFileName().toString().split("\\.");
+    var jobName = parts[0];
+    var jobId = Integer.parseInt(parts[1]);
     try {
       Files.walkFileTree(
           executionDir,
@@ -44,8 +48,7 @@ public class TestSuiteImporter {
               var d = path.getParent().getFileName().toString();
               if (!attrs.isDirectory()
                   && (d.equals("surefire-reports") || d.equals("failsafe-reports"))
-                  && f.startsWith("TEST-")
-                  && f.endsWith(".xml")) {
+                  && f.matches("TEST-(.+)\\.xml")) {
                 xmlPaths.add(path);
               }
               return FileVisitResult.CONTINUE;
@@ -56,16 +59,20 @@ public class TestSuiteImporter {
       logger.error(msg, e);
       return Either.left(msg);
     }
-    Set<TestSuite> suites = HashSet.empty();
+    Set<EnrichedTestCase> testCases = HashSet.empty();
     for (var xml : xmlPaths) {
       try {
         var s = mapper.readValue(xml.toFile(), TestSuite.class);
-        suites = suites.add(s);
-      } catch (IOException e2) {
-        logger.error("Failed to parse file " + xml, e2);
+        // Path: $module/target/$reportDir/$reportXml
+        var mavenModule = xml.getParent().getParent().getParent().getFileName().toString();
+        var cases =
+            HashSet.ofAll(s.testCases()).map(t -> t.enrichWith(jobName, jobId, mavenModule));
+        testCases = testCases.addAll(cases);
+      } catch (IOException e) {
+        logger.error("Failed to parse file " + xml, e);
       }
     }
-    return Either.right(suites);
+    return Either.right(testCases);
   }
 
   private TestSuiteImporter() {

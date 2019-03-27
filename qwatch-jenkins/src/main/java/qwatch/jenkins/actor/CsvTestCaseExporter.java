@@ -10,7 +10,6 @@ import qwatch.jenkins.model.EnrichedTestCase;
 
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
 
 /**
  * @author Mincong Huang
@@ -25,7 +24,7 @@ public class CsvTestCaseExporter {
   }
 
   public Either<String, Void> export(SortedSet<EnrichedTestCase> testCases) {
-    var lines = List.of("\"jobName\",\"jobId\",\"class\",\"name\",\"time\"");
+    var lines = List.of("\"jobName\",\"jobId\",\"module\",\"class\",\"name\",\"time\"");
     lines = lines.appendAll(testCases.map(this::toRow));
     try {
       Files.write(dataDir.resolve("executions.csv"), lines, CREATE, TRUNCATE_EXISTING);
@@ -38,10 +37,11 @@ public class CsvTestCaseExporter {
   String toRow(EnrichedTestCase t) {
     var jobName = t.jobName().replace("\"", "\"\"");
     var jobId = t.jobExecutionId();
+    var module = t.module().replace("\"", "\"\"");
     var className = t.className().replace("\"", "\"\"");
     var name = t.name().replace("\"", "\"\"");
     var time = String.format("%.3f", t.time());
-    return "\"" + jobName + "\",\"" + jobId + "\",\"" + className + "\",\"" + name + "\",\"" + time
-        + "\"";
+    return "\"" + jobName + "\",\"" + jobId + "\",\"" + module + "\",\"" + className + "\",\""
+        + name + "\",\"" + time + "\"";
   }
 }

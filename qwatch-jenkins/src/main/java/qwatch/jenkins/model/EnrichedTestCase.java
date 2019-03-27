@@ -36,6 +36,8 @@ public abstract class EnrichedTestCase {
 
   public abstract int jobExecutionId();
 
+  public abstract String module();
+
   @AutoValue.Builder
   public abstract static class Builder { // NOSONAR: AutoValue
 
@@ -48,6 +50,8 @@ public abstract class EnrichedTestCase {
     public abstract Builder jobName(String jobName);
 
     public abstract Builder jobExecutionId(int jobExecutionId);
+
+    public abstract Builder module(String module);
 
     public abstract EnrichedTestCase build();
   }

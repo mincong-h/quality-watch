@@ -32,12 +32,14 @@ public abstract class TestCase {
    *
    * @param jobName the Jenkins job name
    * @param jobExecutionId the Jenkins job execution id
+   * @param module the Maven module
    * @return an enriched test case
    */
-  public EnrichedTestCase enrichWith(String jobName, int jobExecutionId) {
+  public EnrichedTestCase enrichWith(String jobName, int jobExecutionId, String module) {
     return EnrichedTestCase.newBuilder(this)
         .jobName(jobName)
         .jobExecutionId(jobExecutionId)
+        .module(module)
         .build();
   }
 

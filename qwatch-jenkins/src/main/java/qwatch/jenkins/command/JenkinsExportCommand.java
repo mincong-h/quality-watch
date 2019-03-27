@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import qwatch.jenkins.actor.CsvTestCaseExporter;
 import qwatch.jenkins.actor.TestSuiteImporter;
 import qwatch.jenkins.model.EnrichedTestCase;
-import qwatch.jenkins.model.TestSuite;
 
 import static java.util.Comparator.comparing;
 
@@ -73,20 +72,13 @@ public class JenkinsExportCommand {
     var suites = new java.util.HashSet<EnrichedTestCase>();
     try (var execDirs = Files.newDirectoryStream(artifactDir, "nos-*")) {
       for (var dir : execDirs) {
-        var result = TestSuiteImporter.importSuites(dir);
+        var result = TestSuiteImporter.importTestCases(dir);
         if (result.isLeft()) {
           logger.error(result.getLeft());
         } else {
           // Transform
           logger.info("Processing {}", dir);
-          var parts = dir.getFileName().toString().split("\\.");
-          var jobName = parts[0];
-          var jobId = Integer.parseInt(parts[1]);
-          result
-              .get()
-              .flatMap(TestSuite::testCases)
-              .map(t -> t.enrichWith(jobName, jobId))
-              .forEach(suites::add);
+          result.get().forEach(suites::add);
         }
       }
     } catch (IOException e) {
