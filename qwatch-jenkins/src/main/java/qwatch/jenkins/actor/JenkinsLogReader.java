@@ -61,7 +61,7 @@ public class JenkinsLogReader {
           logs.add(RawLog.parseTrusted(line));
         }
       } else  {
-        var last = logs.peekLast();
+        var last = logs.pollLast();
         logs.add(last.extendMsg(line));
       }
     }
