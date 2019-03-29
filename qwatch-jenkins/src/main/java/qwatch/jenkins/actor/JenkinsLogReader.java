@@ -2,7 +2,12 @@ package qwatch.jenkins.actor;
 
 import io.vavr.collection.List;
 import io.vavr.control.Either;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import qwatch.jenkins.model.maven.RawLog;
 
 /**
@@ -13,7 +18,47 @@ import qwatch.jenkins.model.maven.RawLog;
  */
 public class JenkinsLogReader {
 
+  private static final Logger logger = LoggerFactory.getLogger(JenkinsLogReader.class);
+
+  private static final String MVN_START_PREFIX = "Executing Maven:";
+
   Either<String, List<RawLog>> read(Path logFile) {
+    java.util.List<String> lines;
+    try {
+      lines = Files.readAllLines(logFile);
+    } catch (IOException e) {
+      return Either.left("Failed to read log file: " + logFile.toAbsolutePath());
+    }
+
+    // Before Maven logs: skip
+    var it = lines.iterator();
+    var isMaven = false;
+    while (it.hasNext() && !isMaven) {
+      var line = it.next();
+      if (line.startsWith(MVN_START_PREFIX)) {
+        isMaven = true;
+      }
+    }
+
+    // During Maven logs: process
+    var logs = new java.util.LinkedList<RawLog>();
+    while (it.hasNext() && isMaven) {
+      var line = it.next();
+      if (line.startsWith("[INFO]")
+          || line.startsWith("[WARNING]")
+          || line.startsWith("[ERROR]")) {
+        logs.add(RawLog.parseTrusted(line));
+      } else {
+        var last = logs.peekLast();
+        logs.add(last.extendMsg(line));
+      }
+    }
+    System.out.printf("%,d lines collected.", logs.size());
     return Either.left("Not implemented yet.");
+  }
+
+  public static void main(String[] args) {
+    JenkinsLogReader reader = new JenkinsLogReader();
+    reader.read(Paths.get("/Users/mincong/jenkins/jenkins-artifacts/nos-master.270/jenkins.log"));
   }
 }
