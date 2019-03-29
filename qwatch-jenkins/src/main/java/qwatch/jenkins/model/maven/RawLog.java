@@ -39,6 +39,10 @@ public abstract class RawLog {
     public String representation() {
       return repr;
     }
+
+    public String marker() {
+      return marker;
+    }
   }
 
   /* ---------- Factory Methods ---------- */
