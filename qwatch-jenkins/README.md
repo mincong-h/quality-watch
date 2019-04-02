@@ -14,3 +14,19 @@ for each job execution:
 
 where job name (`jobName`) contains lowercase characters (`[a-z]`) and dash
 (`-`), and job id (`jobId`) is a positive integer.
+
+## Console Log
+
+Console log needs to be downloaded manually from the web page "Console Output"
+of Jenkins job. This can be done by using the following JavaScript in the
+browser console. Why we don't use raw console log? Because raw log does not
+contain timestamp, which is crucial for build time measurement.
+
+```js
+copy($$(".console-output")[0].innerText)
+```
+
+Once copied, create a file called `jenkins.log` in the root level of the
+artifact directory.
+
+    ${jobName}.${id}/jenkins.log
