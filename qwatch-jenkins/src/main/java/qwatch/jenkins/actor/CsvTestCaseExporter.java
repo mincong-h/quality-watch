@@ -27,7 +27,7 @@ public class CsvTestCaseExporter {
     var lines = List.of("\"jobName\",\"jobId\",\"module\",\"class\",\"name\",\"time\"");
     lines = lines.appendAll(testCases.map(this::toRow));
     try {
-      Files.write(dataDir.resolve("executions.csv"), lines, CREATE, TRUNCATE_EXISTING);
+      Files.write(dataDir.resolve("tests.csv"), lines, CREATE, TRUNCATE_EXISTING);
     } catch (IOException e) {
       return Either.left(e.getMessage());
     }
