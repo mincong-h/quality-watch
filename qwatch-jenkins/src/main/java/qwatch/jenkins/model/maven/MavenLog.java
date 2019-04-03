@@ -4,18 +4,20 @@ import com.google.auto.value.AutoValue;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Map;
 import io.vavr.control.Option;
+import java.time.LocalTime;
 import java.util.function.Function;
+import qwatch.jenkins.model.RawLog;
 
-import static qwatch.jenkins.model.maven.RawLog.Level.ERROR;
-import static qwatch.jenkins.model.maven.RawLog.Level.INFO;
-import static qwatch.jenkins.model.maven.RawLog.Level.WARN;
+import static qwatch.jenkins.model.maven.MavenLog.Level.ERROR;
+import static qwatch.jenkins.model.maven.MavenLog.Level.INFO;
+import static qwatch.jenkins.model.maven.MavenLog.Level.WARN;
 
 /**
  * @author Mincong Huang
  * @since 1.0
  */
 @AutoValue
-public abstract class RawLog {
+public abstract class MavenLog {
   public enum Level {
     INFO("INFO"),
     ERROR("ERROR"),
@@ -47,33 +49,34 @@ public abstract class RawLog {
 
   /* ---------- Factory Methods ---------- */
 
-  public static RawLog parseTrusted(String line) {
-    if (line.startsWith(INFO.marker)) {
-      return info(line.substring(INFO.marker.length()));
+  public static MavenLog parseTrusted(RawLog rawLog) {
+    var msg = rawLog.message();
+    if (msg.startsWith(INFO.marker)) {
+      return info(msg.substring(INFO.marker.length())).localTime(rawLog.localTime()).build();
     }
-    if (line.startsWith(WARN.marker)) {
-      return warn(line.substring(WARN.marker.length()));
+    if (msg.startsWith(WARN.marker)) {
+      return warn(msg.substring(WARN.marker.length())).localTime(rawLog.localTime()).build();
     }
-    if (line.startsWith(ERROR.marker)) {
-      return warn(line.substring(ERROR.marker.length()));
+    if (msg.startsWith(ERROR.marker)) {
+      return warn(msg.substring(ERROR.marker.length())).localTime(rawLog.localTime()).build();
     }
-    throw new IllegalStateException("This should never happen. Unable to parse line: " + line);
+    throw new IllegalStateException("This should never happen. Unable to parse line: " + rawLog);
   }
 
-  public static RawLog info(String msg) {
+  public static Builder info(String msg) {
     return of(INFO, msg);
   }
 
-  public static RawLog warn(String msg) {
+  public static Builder warn(String msg) {
     return of(Level.WARN, msg);
   }
 
-  public static RawLog error(String msg) {
+  public static Builder error(String msg) {
     return of(Level.ERROR, msg);
   }
 
-  public static RawLog of(Level level, String msg) {
-    return new AutoValue_RawLog.Builder().level(level).message(msg).build();
+  public static Builder of(Level level, String msg) {
+    return new AutoValue_MavenLog.Builder().level(level).message(msg);
   }
 
   /* ---------- Getter Methods ---------- */
@@ -82,9 +85,11 @@ public abstract class RawLog {
 
   public abstract String message();
 
+  public abstract LocalTime localTime();
+
   /* ---------- Transform Methods ---------- */
 
-  public RawLog extendMsg(String extraMsg) {
+  public MavenLog extendMsg(String extraMsg) {
     return toBuilder().message(message() + '\n' + extraMsg).build();
   }
 
@@ -102,6 +107,8 @@ public abstract class RawLog {
 
     public abstract Builder message(String message);
 
-    public abstract RawLog build();
+    public abstract Builder localTime(LocalTime localTime);
+
+    public abstract MavenLog build();
   }
 }
