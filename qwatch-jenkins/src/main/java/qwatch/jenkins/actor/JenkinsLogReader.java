@@ -36,7 +36,8 @@ public class JenkinsLogReader {
    * @param logFile the filepath of Jenkins logs
    * @return either a failure message, or a tuple of logs before / during / after Maven processing
    */
-  Either<String, Tuple3<List<RawLog>, List<MavenLog>, List<RawLog>>> read(Path logFile) {
+  public static Either<String, Tuple3<List<RawLog>, List<MavenLog>, List<RawLog>>> read(
+      Path logFile) {
     java.util.List<String> lines;
     try {
       lines = Files.readAllLines(logFile);
@@ -125,7 +126,7 @@ public class JenkinsLogReader {
   }
 
   public static void main(String[] args) {
-    JenkinsLogReader reader = new JenkinsLogReader();
-    reader.read(Paths.get("/Users/mincong/jenkins/jenkins-artifacts/nos-master.277/jenkins.log"));
+    JenkinsLogReader.read(
+        Paths.get("/Users/mincong/jenkins/jenkins-artifacts/nos-master.277/jenkins.log"));
   }
 }

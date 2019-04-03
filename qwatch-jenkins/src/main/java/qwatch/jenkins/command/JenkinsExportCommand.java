@@ -1,14 +1,23 @@
 package qwatch.jenkins.command;
 
+import io.vavr.collection.HashSet;
+import io.vavr.collection.List;
+import io.vavr.collection.Set;
 import io.vavr.collection.TreeSet;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import qwatch.jenkins.actor.CsvMavenModuleSummaryExporter;
 import qwatch.jenkins.actor.CsvTestCaseExporter;
+import qwatch.jenkins.actor.JenkinsLogReader;
+import qwatch.jenkins.actor.MavenModuleSummaryReducer;
 import qwatch.jenkins.actor.TestSuiteImporter;
 import qwatch.jenkins.model.EnrichedTestCase;
+import qwatch.jenkins.model.maven.MavenLog;
+import qwatch.jenkins.model.maven.MavenModuleSummary;
 
 import static java.util.Comparator.comparing;
 
@@ -70,36 +79,61 @@ public class JenkinsExportCommand {
 
     // Collect
     var suites = new java.util.HashSet<EnrichedTestCase>();
+    var logs = new HashMap<String, List<MavenLog>>();
     try (var execDirs = Files.newDirectoryStream(artifactDir, "nos-*")) {
       for (var dir : execDirs) {
-        var result = TestSuiteImporter.importTestCases(dir);
-        if (result.isLeft()) {
-          logger.error(result.getLeft());
-        } else {
-          // Transform
-          logger.info("Processing {}", dir);
-          result.get().forEach(suites::add);
-        }
+        logger.info("Processing {}", dir);
+        var dirName = dir.getFileName().toString();
+        // test cases
+        TestSuiteImporter.importTestCases(dir)
+            .peekLeft(logger::error)
+            .peek(s -> suites.addAll(s.toJavaSet()));
+        // logs
+        JenkinsLogReader.read(dir.resolve("jenkins.log"))
+            .peekLeft(logger::error)
+            .peek(s -> logs.put(dirName, s._2));
       }
     } catch (IOException e) {
       logger.error("Failed to list files in directory " + artifactDir, e);
       return;
     }
 
+    // Reduce
+    Set<MavenModuleSummary> mavenSummaries = HashSet.empty();
+    for (var jobLogs : logs.entrySet()) {
+      var jobName = jobLogs.getKey().split("\\.")[0];
+      var jobId = Integer.parseInt(jobLogs.getKey().split("\\.")[1]);
+      mavenSummaries.addAll(MavenModuleSummaryReducer.reduce(jobName, jobId, jobLogs.getValue()));
+    }
+
     // Export
-    CsvTestCaseExporter exporter = new CsvTestCaseExporter(exportDir);
-    var sorted =
+    var testExporter = new CsvTestCaseExporter(exportDir);
+    var sortedTestCases =
         TreeSet.of(
                 comparing(EnrichedTestCase::jobName)
                     .thenComparing(EnrichedTestCase::jobExecutionId)
                     .thenComparing(EnrichedTestCase::className)
                     .thenComparing(EnrichedTestCase::name))
             .addAll(suites);
-    var result = exporter.export(sorted);
-    if (result.isRight()) {
-      logger.info("Exportation succeed. Exported {} lines.", sorted.size());
+    var testExport = testExporter.export(sortedTestCases);
+    if (testExport.isRight()) {
+      logger.info("Test exportation succeed. Exported {} lines.", sortedTestCases.size());
     } else {
-      logger.error("Exportation failed. Cause: {}", result.getLeft());
+      logger.error("Test exportation failed. Cause: {}", testExport.getLeft());
+    }
+
+    var summaryExporter = new CsvMavenModuleSummaryExporter(exportDir);
+    var sortedSummaries =
+        TreeSet.of(
+                comparing(MavenModuleSummary::jobName)
+                    .thenComparing(MavenModuleSummary::jobExecutionId)
+                    .thenComparing(MavenModuleSummary::startTime))
+            .addAll(mavenSummaries);
+    var summaryExport = summaryExporter.export(sortedSummaries);
+    if (summaryExport.isRight()) {
+      logger.info("Summary exportation succeed. Exported {} lines.", sortedSummaries.size());
+    } else {
+      logger.error("Summary exportation failed. Cause: {}", summaryExport.getLeft());
     }
   }
 }
