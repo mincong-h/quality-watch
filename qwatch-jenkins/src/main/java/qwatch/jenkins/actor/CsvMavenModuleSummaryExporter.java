@@ -38,7 +38,7 @@ public class CsvMavenModuleSummaryExporter {
     var jobName = t.jobName().replace("\"", "\"\"");
     var jobId = t.jobExecutionId();
     var module = t.moduleName().replace("\"", "\"\"");
-    var duration = String.format("%.3f", t.duration().getSeconds());
+    var duration = t.duration().getSeconds();
     return "\"" + jobName + "\",\"" + jobId + "\",\"" + module + "\",\"" + duration + "\"";
   }
 }

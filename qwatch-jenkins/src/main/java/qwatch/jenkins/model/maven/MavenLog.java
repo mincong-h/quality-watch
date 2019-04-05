@@ -52,13 +52,15 @@ public abstract class MavenLog {
   public static MavenLog parseTrusted(RawLog rawLog) {
     var msg = rawLog.message();
     if (msg.startsWith(INFO.marker)) {
-      return info(msg.substring(INFO.marker.length())).localTime(rawLog.localTime()).build();
+      return info(msg.substring(INFO.marker.length()).trim()).localTime(rawLog.localTime()).build();
     }
     if (msg.startsWith(WARN.marker)) {
-      return warn(msg.substring(WARN.marker.length())).localTime(rawLog.localTime()).build();
+      return warn(msg.substring(WARN.marker.length()).trim()).localTime(rawLog.localTime()).build();
     }
     if (msg.startsWith(ERROR.marker)) {
-      return warn(msg.substring(ERROR.marker.length())).localTime(rawLog.localTime()).build();
+      return warn(msg.substring(ERROR.marker.length()).trim())
+          .localTime(rawLog.localTime())
+          .build();
     }
     throw new IllegalStateException("This should never happen. Unable to parse line: " + rawLog);
   }
