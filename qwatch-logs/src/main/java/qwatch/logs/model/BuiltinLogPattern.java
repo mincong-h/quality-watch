@@ -522,6 +522,74 @@ public enum BuiltinLogPattern implements LogPattern {
     public String shortMsg() {
       return "Uncaught error on thread ${thread}";
     }
+  },
+
+  BRANCH_NOT_FOUND(30) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile(
+          "^No studio current snapshot The branch (.*) was not found for the current project$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "The branch ${branch} was not found for the current project";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "The branch ${branch} was not found for the current project";
+    }
+  },
+
+  UNLOCKING_LOCKFILE_FAILED(31) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Unlocking LockFile '(.*/gc\\.log\\.lock)' failed$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Unlocking LockFile ${path/to/gc.log.lock} failed";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Unlocking LockFile ${path/to/gc.log.lock} failed";
+    }
+  },
+
+  KILLED_HANDLE_JDBC(32) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Killed handle: org.tranql.connector.jdbc.ConnectionHandle@(.*)ManagedConnectionInfo(.*)$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Killed handle: org.tranql.connector.jdbc.ConnectionHandle...";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Killed handle: org.tranql.connector.jdbc.ConnectionHandle...";
+    }
+  },
+  ERR_COMMITTING_LOCAL_XA_RESOURCE(33) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Unexpected exception committing org\\.apache\\.geronimo\\.connector\\.outbound\\.LocalXAResource@(.*); continuing to commit other RMs$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Unexpected exception committing org.apache.geronimo.connector.outbound.LocalXAResource; continuing to commit other RMs";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Unexpected exception committing org.apache.geronimo.connector.outbound.LocalXAResource";
+    }
   };
 
   private static final String NOT_IMPLEMENTED = "Should be implemented by enum element";
