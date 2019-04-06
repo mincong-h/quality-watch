@@ -3,8 +3,6 @@ package qwatch.jenkins.actor;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.List;
 import io.vavr.collection.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import qwatch.jenkins.model.maven.MavenLog;
 import qwatch.jenkins.model.maven.MavenModuleSummary;
 
@@ -14,7 +12,6 @@ import qwatch.jenkins.model.maven.MavenModuleSummary;
  */
 public class MavenModuleSummaryReducer {
 
-  private static final Logger logger = LoggerFactory.getLogger(MavenModuleSummary.class);
   private static final String SEP_LINE =
       "------------------------------------------------------------------------";
   private static final String REACTOR_BUILD_ORDER_LINE = "Reactor Build Order:";
@@ -47,15 +44,20 @@ public class MavenModuleSummaryReducer {
     }
 
     // Modules
-    var modules = true;
-    var moduleHeader = true;
-    var moduleBody = false;
+    var hasModules = true;
+    var isHeader = true;
     final var summaries = new java.util.LinkedList<MavenModuleSummary>();
     MavenModuleSummary summary = null;
-    while (it.hasNext() && modules) {
+    while (it.hasNext() && hasModules) {
       var log = it.next();
-      if (moduleHeader) {
-        var moduleName = log.message().replace(MODULE_HEADER_PREFIX, "");
+      if (REACTOR_SUMMARY_LINE.equals(log.message())) {
+        hasModules = false;
+      } else if (SEP_LINE.equals(log.message())) {
+        // next module
+        summaries.add(summary);
+        isHeader = true;
+      } else if (isHeader) {
+        var moduleName = log.message().substring(MODULE_HEADER_PREFIX.length());
         summary =
             MavenModuleSummary.newBuilder()
                 .jobName(jobName)
@@ -64,26 +66,16 @@ public class MavenModuleSummaryReducer {
                 .endTime(log.localTime())
                 .moduleName(moduleName)
                 .build();
-        moduleHeader = false;
-        it.next(); // skip separator
-        moduleBody = true;
-        continue;
-      }
-      if (SEP_LINE.equals(log.message())) {
-        moduleBody = false;
-        // next module
-        summaries.add(summary);
-        moduleHeader = true;
-      }
-      if (REACTOR_SUMMARY_LINE.equals(log.message())) {
-        modules = false;
-        continue;
-      }
-      if (moduleBody) {
+        isHeader = false;
+        it.next(); // skip next line (separator)
+      } else {
         summary = summary.toBuilder().endTime(log.localTime()).build();
       }
     }
-    logger.info("{} lines collected", summaries.size());
     return HashSet.ofAll(summaries);
+  }
+
+  private MavenModuleSummaryReducer() {
+    // Utility class, do not instantiate
   }
 }

@@ -103,10 +103,10 @@ public class JenkinsExportCommand {
     for (var jobLogs : logs.entrySet()) {
       var jobName = jobLogs.getKey().split("\\.")[0];
       var jobId = Integer.parseInt(jobLogs.getKey().split("\\.")[1]);
-      logger.info("Reducing {} logs from job {}.{}", jobLogs.getValue().size(), jobName, jobId);
-      mavenSummaries =
-          mavenSummaries.addAll(
-              MavenModuleSummaryReducer.reduce(jobName, jobId, jobLogs.getValue()));
+      logger.info("Job {}.{}: reducing {} logs", jobName, jobId, jobLogs.getValue().size());
+      var s = MavenModuleSummaryReducer.reduce(jobName, jobId, jobLogs.getValue());
+      logger.info("Job {}.{}: reduced to {} modules", jobName, jobId, s.size());
+      mavenSummaries = mavenSummaries.addAll(s);
     }
 
     // Export
