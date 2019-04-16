@@ -18,6 +18,7 @@ import qwatch.jenkins.actor.TestSuiteImporter;
 import qwatch.jenkins.model.EnrichedTestCase;
 import qwatch.jenkins.model.maven.MavenLog;
 import qwatch.jenkins.model.maven.MavenModuleSummary;
+import qwatch.jenkins.model.maven.MavenPluginExecSummary;
 
 import static java.util.Comparator.comparing;
 
@@ -99,7 +100,7 @@ public class JenkinsExportCommand {
     }
 
     // Reduce
-    Set<MavenModuleSummary> mavenSummaries = HashSet.empty();
+    Set<MavenPluginExecSummary> mavenSummaries = HashSet.empty();
     for (var jobLogs : logs.entrySet()) {
       var jobName = jobLogs.getKey().split("\\.")[0];
       var jobId = Integer.parseInt(jobLogs.getKey().split("\\.")[1]);
@@ -128,9 +129,9 @@ public class JenkinsExportCommand {
     var summaryExporter = new CsvMavenModuleSummaryExporter(exportDir);
     var sortedSummaries =
         TreeSet.of(
-                comparing(MavenModuleSummary::jobName)
-                    .thenComparing(MavenModuleSummary::jobExecutionId)
-                    .thenComparing(MavenModuleSummary::startTime))
+                comparing(MavenPluginExecSummary::jobName)
+                    .thenComparing(MavenPluginExecSummary::jobExecId)
+                    .thenComparing(MavenPluginExecSummary::startTime))
             .addAll(mavenSummaries);
     var summaryExport = summaryExporter.export(sortedSummaries);
     if (summaryExport.isRight()) {

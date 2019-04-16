@@ -6,7 +6,7 @@ import io.vavr.control.Either;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import qwatch.jenkins.model.maven.MavenModuleSummary;
+import qwatch.jenkins.model.maven.MavenPluginExecSummary;
 
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
@@ -23,9 +23,11 @@ public class CsvMavenModuleSummaryExporter {
     this.dataDir = dataDir;
   }
 
-  public Either<String, Void> export(SortedSet<MavenModuleSummary> testCases) {
-    var lines = List.of("\"jobName\",\"jobId\",\"module\",\"duration\"");
-    lines = lines.appendAll(testCases.map(this::toRow));
+  public Either<String, Void> export(SortedSet<MavenPluginExecSummary> summaries) {
+    var lines =
+        List.of(
+            "\"jobName\",\"jobId\",\"module\",\"pluginName\",\"pluginVersion\",\"pluginGoal\",\"pluginExecId\",\"duration\"");
+    lines = lines.appendAll(summaries.map(this::toRow));
     try {
       Files.write(dataDir.resolve("maven.csv"), lines, CREATE, TRUNCATE_EXISTING);
     } catch (IOException e) {
@@ -34,11 +36,31 @@ public class CsvMavenModuleSummaryExporter {
     return Either.right(null);
   }
 
-  String toRow(MavenModuleSummary t) {
+  private String toRow(MavenPluginExecSummary t) {
     var jobName = t.jobName().replace("\"", "\"\"");
-    var jobId = t.jobExecutionId();
-    var module = t.moduleName().replace("\"", "\"\"");
+    var jobId = t.jobExecId();
+    var module = t.moduleId().replace("\"", "\"\"");
+    var pluginName = t.pluginName().replace("\"", "\"\"");
+    var pluginVersion = t.pluginVersion().replace("\"", "\"\"");
+    var pluginGoal = t.pluginGoal().replace("\"", "\"\"");
+    var pluginExecId = t.pluginExecId().replace("\"", "\"\"");
     var duration = t.duration().getSeconds();
-    return "\"" + jobName + "\",\"" + jobId + "\",\"" + module + "\",\"" + duration + "\"";
+    return "\""
+        + jobName
+        + "\",\""
+        + jobId
+        + "\",\""
+        + module
+        + "\",\""
+        + pluginName
+        + "\",\""
+        + pluginVersion
+        + "\",\""
+        + pluginGoal
+        + "\",\""
+        + pluginExecId
+        + "\",\""
+        + duration
+        + "\"";
   }
 }
