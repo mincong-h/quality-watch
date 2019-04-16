@@ -562,7 +562,8 @@ public enum BuiltinLogPattern implements LogPattern {
   KILLED_HANDLE_JDBC(32) {
     @Override
     public Pattern pattern() {
-      return Pattern.compile("^Killed handle: org.tranql.connector.jdbc.ConnectionHandle@(.*)ManagedConnectionInfo(.*)$");
+      return Pattern.compile(
+          "^Killed handle: org.tranql.connector.jdbc.ConnectionHandle@(.*)ManagedConnectionInfo(.*)$");
     }
 
     @Override
@@ -578,7 +579,8 @@ public enum BuiltinLogPattern implements LogPattern {
   ERR_COMMITTING_LOCAL_XA_RESOURCE(33) {
     @Override
     public Pattern pattern() {
-      return Pattern.compile("^Unexpected exception committing org\\.apache\\.geronimo\\.connector\\.outbound\\.LocalXAResource@(.*); continuing to commit other RMs$");
+      return Pattern.compile(
+          "^Unexpected exception committing org\\.apache\\.geronimo\\.connector\\.outbound\\.LocalXAResource@(.*); continuing to commit other RMs$");
     }
 
     @Override
@@ -589,6 +591,38 @@ public enum BuiltinLogPattern implements LogPattern {
     @Override
     public String shortMsg() {
       return "Unexpected exception committing org.apache.geronimo.connector.outbound.LocalXAResource";
+    }
+  },
+  FAILED_TO_CREATE_REPOSITORY(34) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Failed to create repository for request=GitRepositoryCreate(.*)$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Failed to create repository for request=GitRepositoryCreate{...}";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Failed to create repository";
+    }
+  },
+  FAILED_TO_DELETE_REPOSITORY(35) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Failed to delete repository (.*)$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Failed to delete repository ${projectId}";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Failed to delete repository";
     }
   };
 
