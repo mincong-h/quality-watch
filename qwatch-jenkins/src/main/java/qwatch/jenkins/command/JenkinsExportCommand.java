@@ -17,7 +17,6 @@ import qwatch.jenkins.actor.MavenModuleSummaryReducer;
 import qwatch.jenkins.actor.TestSuiteImporter;
 import qwatch.jenkins.model.EnrichedTestCase;
 import qwatch.jenkins.model.maven.MavenLog;
-import qwatch.jenkins.model.maven.MavenModuleSummary;
 import qwatch.jenkins.model.maven.MavenPluginExecSummary;
 
 import static java.util.Comparator.comparing;
@@ -79,7 +78,7 @@ public class JenkinsExportCommand {
     logger.info("exportDir: {}", exportDir);
 
     // Collect
-    var suites = new java.util.HashSet<EnrichedTestCase>();
+    var suites = new java.util.LinkedList<EnrichedTestCase>();
     var logs = new HashMap<String, List<MavenLog>>();
     try (var execDirs = Files.newDirectoryStream(artifactDir, "nos-*")) {
       for (var dir : execDirs) {
@@ -88,7 +87,7 @@ public class JenkinsExportCommand {
         // test cases
         TestSuiteImporter.importTestCases(dir)
             .peekLeft(logger::error)
-            .peek(s -> suites.addAll(s.toJavaSet()));
+            .peek(s -> suites.addAll(s.toJavaList()));
         // logs
         JenkinsLogReader.read(dir.resolve("jenkins.log"))
             .peekLeft(logger::error)
@@ -113,12 +112,12 @@ public class JenkinsExportCommand {
     // Export
     var testExporter = new CsvTestCaseExporter(exportDir);
     var sortedTestCases =
-        TreeSet.of(
+        List.ofAll(suites).sorted(
                 comparing(EnrichedTestCase::jobName)
                     .thenComparing(EnrichedTestCase::jobExecutionId)
+                    .thenComparing(EnrichedTestCase::module)
                     .thenComparing(EnrichedTestCase::className)
-                    .thenComparing(EnrichedTestCase::name))
-            .addAll(suites);
+                    .thenComparing(EnrichedTestCase::name));
     var testExport = testExporter.export(sortedTestCases);
     if (testExport.isRight()) {
       logger.info("Test exportation succeed. Exported {} lines.", sortedTestCases.size());

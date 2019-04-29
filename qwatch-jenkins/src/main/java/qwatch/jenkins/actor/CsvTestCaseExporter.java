@@ -1,7 +1,6 @@
 package qwatch.jenkins.actor;
 
 import io.vavr.collection.List;
-import io.vavr.collection.SortedSet;
 import io.vavr.control.Either;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,9 +22,11 @@ public class CsvTestCaseExporter {
     this.dataDir = dataDir;
   }
 
-  public Either<String, Void> export(SortedSet<EnrichedTestCase> testCases) {
+  public Either<String, Void> export(Iterable<EnrichedTestCase> testCases) {
     var lines = List.of("\"jobName\",\"jobId\",\"module\",\"class\",\"name\",\"time\"");
-    lines = lines.appendAll(testCases.map(this::toRow));
+    for (var tc : testCases) {
+      lines = lines.append(toRow(tc));
+    }
     try {
       Files.write(dataDir.resolve("tests.csv"), lines, CREATE, TRUNCATE_EXISTING);
     } catch (IOException e) {

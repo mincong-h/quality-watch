@@ -2,7 +2,7 @@ package qwatch.jenkins.actor;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import io.vavr.collection.HashSet;
-import io.vavr.collection.Set;
+import io.vavr.collection.List;
 import io.vavr.control.Either;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -33,7 +33,7 @@ public class TestSuiteImporter {
    * @param executionDir Jenkins build execution directory
    * @return either failure or a set of test-suites
    */
-  public static Either<String, Set<EnrichedTestCase>> importTestCases(Path executionDir) {
+  public static Either<String, List<EnrichedTestCase>> importTestCases(Path executionDir) {
     var xmlPaths = new java.util.HashSet<Path>();
     var parts = executionDir.getFileName().toString().split("\\.");
     var jobName = parts[0];
@@ -59,7 +59,7 @@ public class TestSuiteImporter {
       logger.error(msg, e);
       return Either.left(msg);
     }
-    Set<EnrichedTestCase> testCases = HashSet.empty();
+    List<EnrichedTestCase> testCases = List.empty();
     for (var xml : xmlPaths) {
       try {
         var s = mapper.readValue(xml.toFile(), TestSuite.class);
@@ -67,7 +67,7 @@ public class TestSuiteImporter {
         var mavenModule = xml.getParent().getParent().getParent().getFileName().toString();
         var cases =
             HashSet.ofAll(s.testCases()).map(t -> t.enrichWith(jobName, jobId, mavenModule));
-        testCases = testCases.addAll(cases);
+        testCases = testCases.appendAll(cases);
       } catch (IOException e) {
         logger.error("Failed to parse file " + xml, e);
       }
