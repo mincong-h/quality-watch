@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.google.auto.value.AutoValue;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -49,13 +50,13 @@ public abstract class TestSuite {
   @JacksonXmlProperty(localName = "properties")
   public abstract Set<TestProperty> properties();
 
-  public Set<TestCase> testCases() {
-    return optTestCases().orElse(Set.of());
+  public List<TestCase> testCases() {
+    return optTestCases().orElse(List.of());
   }
 
   @JacksonXmlElementWrapper(useWrapping = false)
   @JacksonXmlProperty(localName = "testcase")
-  abstract Optional<Set<TestCase>> optTestCases();
+  abstract Optional<List<TestCase>> optTestCases();
 
   @AutoValue.Builder
   public abstract static class Builder {
@@ -90,24 +91,24 @@ public abstract class TestSuite {
       return properties(Set.of(properties));
     }
 
-    public abstract Builder optTestCases(Optional<Set<TestCase>> testCases);
+    public abstract Builder optTestCases(Optional<List<TestCase>> testCases);
 
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "testcase")
-    public Builder testCases(Set<TestCase> testCases) {
+    public Builder testCases(List<TestCase> testCases) {
       return optTestCases(Optional.of(testCases));
     }
 
     public Builder testCases(TestCase... testCases) {
-      return testCases(Set.of(testCases));
+      return testCases(List.of(testCases));
     }
 
-    abstract Optional<Set<TestCase>> optTestCases();
+    abstract Optional<List<TestCase>> optTestCases();
 
     abstract TestSuite autoBuild();
 
     public TestSuite build() {
-      testCases(optTestCases().orElse(Set.of()));
+      testCases(optTestCases().orElse(List.of()));
       return autoBuild();
     }
   }
