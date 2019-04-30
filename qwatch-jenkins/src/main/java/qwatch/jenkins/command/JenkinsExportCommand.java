@@ -103,16 +103,19 @@ public class JenkinsExportCommand {
     for (var jobLogs : logs.entrySet()) {
       var jobName = jobLogs.getKey().split("\\.")[0];
       var jobId = Integer.parseInt(jobLogs.getKey().split("\\.")[1]);
-      logger.info("Job {}.{}: reducing {} logs", jobName, jobId, jobLogs.getValue().size());
-      var s = MavenModuleSummaryReducer.reduce(jobName, jobId, jobLogs.getValue());
-      logger.info("Job {}.{}: reduced to {} modules", jobName, jobId, s.size());
-      mavenSummaries = mavenSummaries.addAll(s);
+      var summary = MavenModuleSummaryReducer.reduce(jobName, jobId, jobLogs.getValue());
+      mavenSummaries = mavenSummaries.addAll(summary);
+
+      var logSize = String.format("%,d", jobLogs.getValue().size());
+      var modSize = String.format("%,d", summary.size());
+      logger.info("Job {}.{}: reduced {} logs to {} modules", jobName, jobId, logSize, modSize);
     }
 
     // Export
     var testExporter = new CsvTestCaseExporter(exportDir);
     var sortedTestCases =
-        List.ofAll(suites).sorted(
+        List.ofAll(suites)
+            .sorted(
                 comparing(EnrichedTestCase::jobName)
                     .thenComparing(EnrichedTestCase::jobExecutionId)
                     .thenComparing(EnrichedTestCase::module)
@@ -120,7 +123,8 @@ public class JenkinsExportCommand {
                     .thenComparing(EnrichedTestCase::name));
     var testExport = testExporter.export(sortedTestCases);
     if (testExport.isRight()) {
-      logger.info("Test exportation succeed. Exported {} lines.", sortedTestCases.size());
+      var lines = String.format("%,d", sortedTestCases.size());
+      logger.info("Test exportation succeed. Exported {} lines.", lines);
     } else {
       logger.error("Test exportation failed. Cause: {}", testExport.getLeft());
     }
@@ -134,7 +138,8 @@ public class JenkinsExportCommand {
             .addAll(mavenSummaries);
     var summaryExport = summaryExporter.export(sortedSummaries);
     if (summaryExport.isRight()) {
-      logger.info("Summary exportation succeed. Exported {} lines.", sortedSummaries.size());
+      var lines = String.format("%,d", sortedSummaries.size());
+      logger.info("Summary exportation succeed. Exported {} lines.", lines);
     } else {
       logger.error("Summary exportation failed. Cause: {}", summaryExport.getLeft());
     }
