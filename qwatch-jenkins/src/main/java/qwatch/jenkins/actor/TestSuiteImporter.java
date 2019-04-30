@@ -3,11 +3,14 @@ package qwatch.jenkins.actor;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.List;
+import io.vavr.collection.Set;
 import io.vavr.control.Either;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import org.slf4j.Logger;
@@ -28,39 +31,54 @@ public class TestSuiteImporter {
   private static final XmlMapper mapper = ObjectMapperFactory.newXmlMapper();
 
   /**
+   * Path matcher for test reports.
+   *
+   * <p>The Surefire Plugin generates reports in two different file formats:
+   *
+   * <ul>
+   *   <li>Plain text files (*.txt)
+   *   <li>XML files (*.xml)
+   * </ul>
+   *
+   * By default, these files are generated in <code>${basedir}/target/surefire-reports/TEST-*.xml
+   * </code>.
+   *
+   * <p>The Failsafe Plugin generates reports in two different file formats:
+   *
+   * <ul>
+   *   <li>Plain text files (*.txt)
+   *   <li>XML files (*.xml)
+   * </ul>
+   *
+   * By default, these files are generated in <code>${basedir}/target/failsafe-reports/TEST-*.xml
+   * </code>.
+   *
+   * @see <a href="https://maven.apache.org/surefire/maven-surefire-plugin/">Maven Surefire
+   *     Plugin</a>
+   * @see <a href="https://maven.apache.org/surefire/maven-failsafe-plugin/">Maven Failsafe
+   *     Plugin</a>
+   */
+  private static final PathMatcher TEST_REPORT_MATCHER =
+      FileSystems.getDefault()
+          .getPathMatcher("glob:**/target/{surefire,failsafe}-reports/TEST-*.xml");
+
+  /**
    * Import test suites from a given Jenkins build execution directory.
    *
    * @param executionDir Jenkins build execution directory
    * @return either failure or a set of test-suites
    */
   public static Either<String, List<EnrichedTestCase>> importTestCases(Path executionDir) {
-    var xmlPaths = new java.util.HashSet<Path>();
     var parts = executionDir.getFileName().toString().split("\\.");
     var jobName = parts[0];
     var jobId = Integer.parseInt(parts[1]);
-    try {
-      Files.walkFileTree(
-          executionDir,
-          new SimpleFileVisitor<>() {
-            @Override
-            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
-              var f = path.getFileName().toString();
-              var d = path.getParent().getFileName().toString();
-              if (!attrs.isDirectory()
-                  && (d.equals("surefire-reports") || d.equals("failsafe-reports"))
-                  && f.matches("TEST-(.+)\\.xml")) {
-                xmlPaths.add(path);
-              }
-              return FileVisitResult.CONTINUE;
-            }
-          });
-    } catch (IOException e) {
-      var msg = "Failed to list files from " + executionDir;
-      logger.error(msg, e);
-      return Either.left(msg);
-    }
+
     List<EnrichedTestCase> testCases = List.empty();
-    for (var xml : xmlPaths) {
+    var tryFindReports = findReports(executionDir);
+    if (tryFindReports.isLeft()) {
+      return Either.left(tryFindReports.getLeft());
+    }
+    for (var xml : tryFindReports.get()) {
       try {
         var s = mapper.readValue(xml.toFile(), TestSuite.class);
         // Path: $module/target/$reportDir/$reportXml
@@ -73,6 +91,28 @@ public class TestSuiteImporter {
       }
     }
     return Either.right(testCases);
+  }
+
+  static Either<String, Set<Path>> findReports(Path executionDir) {
+    var xmlPaths = new java.util.HashSet<Path>();
+    try {
+      Files.walkFileTree(
+          executionDir,
+          new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
+              if (TEST_REPORT_MATCHER.matches(path)) {
+                xmlPaths.add(path);
+              }
+              return FileVisitResult.CONTINUE;
+            }
+          });
+      return Either.right(HashSet.ofAll(xmlPaths));
+    } catch (IOException e) {
+      var msg = "Failed to list files from " + executionDir;
+      logger.error(msg, e);
+      return Either.left(msg);
+    }
   }
 
   private TestSuiteImporter() {
