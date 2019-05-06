@@ -38,6 +38,8 @@ public abstract class EnrichedTestCase {
 
   public abstract String module();
 
+  public abstract Builder toBuilder();
+
   @AutoValue.Builder
   public abstract static class Builder { // NOSONAR: AutoValue
 

@@ -7,6 +7,7 @@ import io.vavr.collection.TreeSet;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +20,6 @@ import qwatch.jenkins.model.EnrichedTestCase;
 import qwatch.jenkins.model.maven.MavenLog;
 import qwatch.jenkins.model.maven.MavenPluginExecSummary;
 
-import static java.util.Comparator.comparing;
-
 /**
  * @author Mincong Huang
  * @since 1.0
@@ -29,6 +28,24 @@ public class JenkinsExportCommand {
 
   public static final String NAME = "jenkins-export";
   private static final Logger logger = LoggerFactory.getLogger(JenkinsExportCommand.class);
+
+  static final Comparator<EnrichedTestCase> ENRICHED_TEST_CASE_COMPARATOR =
+      Comparator.comparing(EnrichedTestCase::jobName)
+          .thenComparing(EnrichedTestCase::jobExecutionId)
+          .thenComparing(EnrichedTestCase::module)
+          .thenComparing(EnrichedTestCase::className)
+          .thenComparing(EnrichedTestCase::name)
+          .thenComparing(EnrichedTestCase::time);
+
+  static final Comparator<MavenPluginExecSummary> MAVEN_PLUGIN_EXEC_SUMMARY_COMPARATOR =
+      Comparator.comparing(MavenPluginExecSummary::jobName)
+          .thenComparing(MavenPluginExecSummary::jobExecId)
+          .thenComparing(MavenPluginExecSummary::moduleId)
+          .thenComparing(MavenPluginExecSummary::pluginName)
+          .thenComparing(MavenPluginExecSummary::pluginVersion)
+          .thenComparing(MavenPluginExecSummary::pluginGoal)
+          .thenComparing(MavenPluginExecSummary::pluginExecId)
+          .thenComparing(MavenPluginExecSummary::startTime);
 
   public static Builder newBuilder() {
     return new Builder();
@@ -113,14 +130,7 @@ public class JenkinsExportCommand {
 
     // Export
     var testExporter = new CsvTestCaseExporter(exportDir);
-    var sortedTestCases =
-        List.ofAll(suites)
-            .sorted(
-                comparing(EnrichedTestCase::jobName)
-                    .thenComparing(EnrichedTestCase::jobExecutionId)
-                    .thenComparing(EnrichedTestCase::module)
-                    .thenComparing(EnrichedTestCase::className)
-                    .thenComparing(EnrichedTestCase::name));
+    var sortedTestCases = List.ofAll(suites).sorted(ENRICHED_TEST_CASE_COMPARATOR);
     var testExport = testExporter.export(sortedTestCases);
     if (testExport.isRight()) {
       var lines = String.format("%,d", sortedTestCases.size());
@@ -130,12 +140,8 @@ public class JenkinsExportCommand {
     }
 
     var summaryExporter = new CsvMavenModuleSummaryExporter(exportDir);
-    var sortedSummaries =
-        TreeSet.of(
-                comparing(MavenPluginExecSummary::jobName)
-                    .thenComparing(MavenPluginExecSummary::jobExecId)
-                    .thenComparing(MavenPluginExecSummary::startTime))
-            .addAll(mavenSummaries);
+
+    var sortedSummaries = TreeSet.of(MAVEN_PLUGIN_EXEC_SUMMARY_COMPARATOR).addAll(mavenSummaries);
     var summaryExport = summaryExporter.export(sortedSummaries);
     if (summaryExport.isRight()) {
       var lines = String.format("%,d", sortedSummaries.size());
