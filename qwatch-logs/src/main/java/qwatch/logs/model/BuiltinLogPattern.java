@@ -624,6 +624,39 @@ public enum BuiltinLogPattern implements LogPattern {
     public String shortMsg() {
       return "Failed to delete repository";
     }
+  },
+  UNABLE_TO_REPLACE_OWNER_ID(36) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Unable to replace the owner id by its name \\[(.*)]$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Unable to replace the owner id by its name ${detail}";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Unable to replace the owner id by its name";
+    }
+  },
+  INCOMPATIBLE_REMOTE_SERVICE_EXCEPTION(37) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile(
+          "^studioRpc: An IncompatibleRemoteServiceException was thrown while processing this call\\.$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "studioRpc: An IncompatibleRemoteServiceException was thrown while processing this call.";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "studioRpc: IncompatibleRemoteServiceException";
+    }
   };
 
   private static final String NOT_IMPLEMENTED = "Should be implemented by enum element";
