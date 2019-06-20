@@ -657,6 +657,38 @@ public enum BuiltinLogPattern implements LogPattern {
     public String shortMsg() {
       return "studioRpc: IncompatibleRemoteServiceException";
     }
+  },
+  ERROR_WHILE_FETCHING_DOWNLOAD(38) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Error while fetching download$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Error while fetching download";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Error while fetching download";
+    }
+  },
+  CANNOT_FORWARD_TO_ERROR_PAGE(39) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Cannot forward to error page: response is already committed$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Cannot forward to error page: response is already committed";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Cannot forward to error page";
+    }
   };
 
   private static final String NOT_IMPLEMENTED = "Should be implemented by enum element";
