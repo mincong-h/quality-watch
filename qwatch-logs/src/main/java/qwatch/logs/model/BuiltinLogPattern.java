@@ -689,6 +689,56 @@ public enum BuiltinLogPattern implements LogPattern {
     public String shortMsg() {
       return "Cannot forward to error page";
     }
+  },
+  REQUEST_PROCESSING_ERROR(40) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Request Processing Error$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Request Processing Error";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Request Processing Error";
+    }
+  },
+  SEGMENT_EVENT_EXEC_FAILED(41) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile(
+          "^Failed to execute async event null on listener segmentIOEventListener$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Failed to execute async event null on listener segmentIOEventListener";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Failed to execute async event on segmentIOEventListener";
+    }
+  },
+  SEGMENT_EXCEPTION_DURING_WORK(42) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile(
+          "^Exception during work: ListenerWork\\(Listener segmentIOEventListener.*$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Exception during work: ListenerWork(Listener segmentIOEventListener ...)";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Exception during work: segmentIOEventListener";
+    }
   };
 
   private static final String NOT_IMPLEMENTED = "Should be implemented by enum element";
