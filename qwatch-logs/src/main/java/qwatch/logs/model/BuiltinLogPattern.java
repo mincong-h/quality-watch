@@ -739,6 +739,27 @@ public enum BuiltinLogPattern implements LogPattern {
     public String shortMsg() {
       return "Exception during work: segmentIOEventListener";
     }
+  },
+  REQUEST_ATTRIBUTE_RESPONSE_COMMITTED(43) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Request Attributes.*$", Pattern.MULTILINE);
+    }
+
+    @Override
+    public String longMsg() {
+      return "Request Attributes (response has been committed)";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Request Attributes (response has been committed)";
+    }
+
+    @Override
+    public boolean matches(String s) {
+      return pattern().matcher(s).find();
+    }
   };
 
   private static final String NOT_IMPLEMENTED = "Should be implemented by enum element";

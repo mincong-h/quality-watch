@@ -24,6 +24,7 @@ import static qwatch.logs.model.BuiltinLogPattern.JGIT_PACK_FILE;
 import static qwatch.logs.model.BuiltinLogPattern.LOGIN_SERVICE_NOT_FOUND;
 import static qwatch.logs.model.BuiltinLogPattern.NO_SUCH_PROJECT;
 import static qwatch.logs.model.BuiltinLogPattern.PROJECT_NOT_FOUND;
+import static qwatch.logs.model.BuiltinLogPattern.REQUEST_ATTRIBUTE_RESPONSE_COMMITTED;
 import static qwatch.logs.model.BuiltinLogPattern.RESET_ON_HEAD_FAILED;
 import static qwatch.logs.model.BuiltinLogPattern.RESPONSE_COMMITTED;
 import static qwatch.logs.model.BuiltinLogPattern.SERVICE_TICKET_MISMATCHED;
@@ -144,5 +145,12 @@ public class BuiltinLogPatternTest {
 
     s = "Bad status when performing REST request to Jira: 400";
     assertThat(ERROR_400_JIRA.matches(s)).isTrue();
+
+    s =
+        "Request Attributes:\n"
+            + "\n"
+            + "exception_message : Cannot call sendError() after the response has been committed\n"
+            + "securityError : false";
+    assertThat(REQUEST_ATTRIBUTE_RESPONSE_COMMITTED.matches(s)).isTrue();
   }
 }
