@@ -760,6 +760,22 @@ public enum BuiltinLogPattern implements LogPattern {
     public boolean matches(String s) {
       return pattern().matcher(s).find();
     }
+  },
+  PROJECT_REMOVAL_LISTENER_FAILED(44) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Exception during projectRemovalListener sync listener execution.*");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Exception during projectRemovalListener sync listener execution";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Exception during projectRemovalListener sync listener execution";
+    }
   };
 
   private static final String NOT_IMPLEMENTED = "Should be implemented by enum element";
