@@ -776,6 +776,55 @@ public enum BuiltinLogPattern implements LogPattern {
     public String shortMsg() {
       return "Exception during projectRemovalListener sync listener execution";
     }
+  },
+  UNKNOWN_DB_CONNECTION(45) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile(
+          "^java.lang.IllegalStateException: unknown connection org.nuxeo.ecm.core.storage.sql.ra.ConnectionImpl.*$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "unknown connection org.nuxeo.ecm.core.storage.sql.ra.ConnectionImpl";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "unknown connection org.nuxeo.ecm.core.storage.sql.ra.ConnectionImpl";
+    }
+  },
+  KILL_HANDLE_DB_CONNECTION(46) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Killed handle: org.nuxeo.ecm.core.storage.sql.ra.ConnectionImpl.*$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Killed handle: org.nuxeo.ecm.core.storage.sql.ra.ConnectionImpl";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Killed handle: org.nuxeo.ecm.core.storage.sql.ra.ConnectionImpl";
+    }
+  },
+  UNABLE_TO_COMMIT_OR_ROLLBACK(47) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^.*Unable to commit/rollback.*$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Unable to commit/rollback";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Unable to commit/rollback";
+    }
   };
 
   private static final String NOT_IMPLEMENTED = "Should be implemented by enum element";
