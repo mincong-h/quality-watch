@@ -825,6 +825,22 @@ public enum BuiltinLogPattern implements LogPattern {
     public String shortMsg() {
       return "Unable to commit/rollback";
     }
+  },
+  ERROR_WHILE_CHECKING_PROJECT_ACCESS(48) {
+    @Override
+    public Pattern pattern() {
+      return Pattern.compile("^Error while checking project access$");
+    }
+
+    @Override
+    public String longMsg() {
+      return "Error while checking project access";
+    }
+
+    @Override
+    public String shortMsg() {
+      return "Error while checking project access";
+    }
   };
 
   private static final String NOT_IMPLEMENTED = "Should be implemented by enum element";
