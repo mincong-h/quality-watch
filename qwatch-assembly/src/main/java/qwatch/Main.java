@@ -1,6 +1,7 @@
 package qwatch;
 
 import java.nio.file.Paths;
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.jenkins.command.JenkinsExportCommand;
@@ -31,13 +32,19 @@ public class Main {
           .execute();
     } else if (StatsCommand.NAME.equals(command)) {
       logger.info("Received command '{}'", command);
-      int n = args.length > 1 ? Integer.parseInt(args[1]) : 200;
-      StatsCommand.newBuilder() //
-          .logDir(Paths.get("/Users/mincong/datadog"))
-          .topN(n)
-          .days(14)
-          .build()
-          .execute();
+//      int n = args.length > 1 ? Integer.parseInt(args[1]) : 200;
+      int n = 200;
+      var parsed = StatsCommand.parse(Arrays.copyOfRange(args, 1, args.length));
+      if (parsed.isLeft()) {
+        logger.error("Failed to parse command '" + StatsCommand.NAME + "'", parsed.getLeft());
+      } else {
+        parsed
+            .get() //
+            .logDir(Paths.get("/Users/mincong/datadog"))
+            .topN(n)
+            .build()
+            .execute();
+      }
     } else if (JenkinsExportCommand.NAME.equals(command)) {
       logger.info("Received command '{}'", command);
       JenkinsExportCommand.newBuilder()

@@ -3,6 +3,7 @@ package qwatch.logs.command;
 import io.vavr.collection.List;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,7 +44,20 @@ public class StatsCommandTest {
 
   @Test
   public void execute() {
-    var summaries = StatsCommand.newBuilder().logDir(tempRoot).days(2).topN(1).build().execute();
+    var summaries =
+        StatsCommand.newBuilder()
+            .logDir(tempRoot)
+            .sinceDate(LocalDate.of(2019, 1, 2))
+            .topN(1)
+            .build()
+            .execute();
     assertThat(summaries).containsExactly(LogSummary.of(2, "[   ] Foo"));
+  }
+
+  @Test
+  public void newOptions() {
+    var options = StatsCommand.newOptions();
+    assertThat(options.hasLongOption(StatsCommand.OPT_LONG_SINCE)).isTrue();
+    assertThat(options.getOption(StatsCommand.OPT_LONG_SINCE).hasArg()).isTrue();
   }
 }

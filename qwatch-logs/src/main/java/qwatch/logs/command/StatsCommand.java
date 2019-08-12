@@ -1,10 +1,18 @@
 package qwatch.logs.command;
 
 import io.vavr.collection.List;
+import io.vavr.control.Either;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.stream.Collectors;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qwatch.logs.io.JsonImporter;
@@ -23,14 +31,39 @@ public class StatsCommand implements Command<List<LogSummary>> {
   private static final Logger logger = LoggerFactory.getLogger(StatsCommand.class);
   public static final String NAME = "stats";
 
+  static final String OPT_LONG_SINCE = "since";
+
   public static Builder newBuilder() {
     return new Builder();
+  }
+
+  public static Either<IllegalArgumentException, Builder> parse(String... args) {
+    var options = newOptions();
+    var parser = new DefaultParser();
+    CommandLine cmd;
+    try {
+      cmd = parser.parse(options, args);
+    } catch (ParseException e) {
+      return Either.left(
+          new IllegalArgumentException("Failed to parse arguments: " + Arrays.toString(args), e));
+    }
+    var builder = new Builder();
+    if (cmd.hasOption(OPT_LONG_SINCE)) {
+      var sinceDateStr = cmd.getOptionValue(OPT_LONG_SINCE);
+      try {
+        var d = LocalDate.parse(sinceDateStr);
+        builder.sinceDate(d);
+      } catch (DateTimeParseException e) {
+        return Either.left(new IllegalArgumentException("Invalid date value: " + sinceDateStr, e));
+      }
+    }
+    return Either.right(builder);
   }
 
   public static class Builder implements CommandBuilder<StatsCommand> {
 
     private int topN;
-    private long days = -1;
+    private LocalDate sinceDate = LocalDate.now().minusDays(14);
     private Path logDir;
 
     /**
@@ -58,15 +91,15 @@ public class StatsCommand implements Command<List<LogSummary>> {
     }
 
     /**
-     * Sets the last N days to be included in the statistics.
+     * Sets the since date from which in the statistics is started.
      *
-     * <p>By default, all log entries included.
+     * <p>By default, the since day is today - 14 days.
      *
-     * @param days the last N days (must be positive)
+     * @param sinceDate since which date the stats should be calculated
      * @return this
      */
-    public Builder days(long days) {
-      this.days = days;
+    public Builder sinceDate(LocalDate sinceDate) {
+      this.sinceDate = sinceDate;
       return this;
     }
 
@@ -77,12 +110,12 @@ public class StatsCommand implements Command<List<LogSummary>> {
   }
 
   private final int topN;
-  private final long days;
+  private final LocalDate startDate;
   private final Path logDir;
 
   private StatsCommand(Builder builder) {
     this.topN = builder.topN;
-    this.days = builder.days;
+    this.startDate = builder.sinceDate;
     this.logDir = builder.logDir;
   }
 
@@ -98,15 +131,9 @@ public class StatsCommand implements Command<List<LogSummary>> {
     if (entries.nonEmpty()) {
       var dates = entries.map(LogEntry::dateTime).map(ZonedDateTime::toLocalDate).toSortedSet();
       var end = dates.last(); // inclusive
-      LocalDate start; // inclusive
-      if (days >= 0 && dates.head().isBefore(end.minusDays(days - 1))) {
-        start = end.minusDays(days - 1);
-      } else {
-        start = dates.head();
-      }
-      entries = entries.filter(e -> !e.dateTime().toLocalDate().isBefore(start));
+      entries = entries.filter(e -> !e.dateTime().toLocalDate().isBefore(startDate));
       var size = String.format("%,d", entries.size());
-      logger.info("{} entries extracted ({} to {}).", size, start, end);
+      logger.info("{} entries extracted ({} to {}).", size, startDate, end);
     } else {
       logger.info("0 entries extracted.");
     }
@@ -119,5 +146,19 @@ public class StatsCommand implements Command<List<LogSummary>> {
             .collect(Collectors.joining("\n"));
     logger.info("Top {} errors:\n{}", summaries.size(), detail);
     return summaries;
+  }
+
+  static Options newOptions() {
+    var options = new Options();
+    var optSince =
+        Option.builder()
+            .longOpt(OPT_LONG_SINCE)
+            .hasArg()
+            .argName("DATE")
+            .desc("Since-date in ISO date format (yyyy-MM-dd).")
+            .required(false)
+            .build();
+    options.addOption(optSince);
+    return options;
   }
 }
