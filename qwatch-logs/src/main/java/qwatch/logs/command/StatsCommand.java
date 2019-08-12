@@ -32,6 +32,7 @@ public class StatsCommand implements Command<List<LogSummary>> {
   public static final String NAME = "stats";
 
   static final String OPT_LONG_SINCE = "since";
+  static final String OPT_LONG_TOP = "top";
 
   public static Builder newBuilder() {
     return new Builder();
@@ -48,13 +49,24 @@ public class StatsCommand implements Command<List<LogSummary>> {
           new IllegalArgumentException("Failed to parse arguments: " + Arrays.toString(args), e));
     }
     var builder = new Builder();
+
     if (cmd.hasOption(OPT_LONG_SINCE)) {
-      var sinceDateStr = cmd.getOptionValue(OPT_LONG_SINCE);
+      var v = cmd.getOptionValue(OPT_LONG_SINCE);
       try {
-        var d = LocalDate.parse(sinceDateStr);
+        var d = LocalDate.parse(v);
         builder.sinceDate(d);
       } catch (DateTimeParseException e) {
-        return Either.left(new IllegalArgumentException("Invalid date value: " + sinceDateStr, e));
+        return Either.left(new IllegalArgumentException("Invalid date value: " + v, e));
+      }
+    }
+
+    if (cmd.hasOption(OPT_LONG_TOP)) {
+      var v = cmd.getOptionValue(OPT_LONG_TOP);
+      try {
+        int topN = Integer.parseInt(v);
+        builder.topN(topN);
+      } catch (NumberFormatException e) {
+        return Either.left(new IllegalArgumentException("Invalid int value: " + v, e));
       }
     }
     return Either.right(builder);
@@ -158,7 +170,16 @@ public class StatsCommand implements Command<List<LogSummary>> {
             .desc("Since-date in ISO date format (yyyy-MM-dd).")
             .required(false)
             .build();
+    var optTop =
+        Option.builder()
+            .longOpt(OPT_LONG_TOP)
+            .hasArg()
+            .argName("N")
+            .desc("Top N results to display, defaults to all.")
+            .required(false)
+            .build();
     options.addOption(optSince);
+    options.addOption(optTop);
     return options;
   }
 }

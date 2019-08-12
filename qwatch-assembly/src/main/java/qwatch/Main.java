@@ -32,8 +32,6 @@ public class Main {
           .execute();
     } else if (StatsCommand.NAME.equals(command)) {
       logger.info("Received command '{}'", command);
-//      int n = args.length > 1 ? Integer.parseInt(args[1]) : 200;
-      int n = 200;
       var parsed = StatsCommand.parse(Arrays.copyOfRange(args, 1, args.length));
       if (parsed.isLeft()) {
         logger.error("Failed to parse command '" + StatsCommand.NAME + "'", parsed.getLeft());
@@ -41,7 +39,6 @@ public class Main {
         parsed
             .get() //
             .logDir(Paths.get("/Users/mincong/datadog"))
-            .topN(n)
             .build()
             .execute();
       }

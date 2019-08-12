@@ -57,7 +57,11 @@ public class StatsCommandTest {
   @Test
   public void newOptions() {
     var options = StatsCommand.newOptions();
+
     assertThat(options.hasLongOption(StatsCommand.OPT_LONG_SINCE)).isTrue();
     assertThat(options.getOption(StatsCommand.OPT_LONG_SINCE).hasArg()).isTrue();
+
+    assertThat(options.hasLongOption(StatsCommand.OPT_LONG_TOP)).isTrue();
+    assertThat(options.getOption(StatsCommand.OPT_LONG_TOP).hasArg()).isTrue();
   }
 }
