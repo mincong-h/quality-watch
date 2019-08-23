@@ -464,12 +464,12 @@ public enum BuiltinLogPattern implements LogPattern {
 
     @Override
     public String longMsg() {
-      return "Error while fetching status";
+      return "Error while fetching status (No instance found for CLID)";
     }
 
     @Override
     public String shortMsg() {
-      return "Error while fetching status";
+      return "Error while fetching status (No instance found for CLID)";
     }
   },
 
