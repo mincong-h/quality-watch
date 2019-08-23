@@ -74,7 +74,7 @@ public class StatsCommand implements Command<List<LogSummary>> {
 
   public static class Builder implements CommandBuilder<StatsCommand> {
 
-    private int topN;
+    private int topN = Integer.MAX_VALUE;
     private LocalDate sinceDate = LocalDate.now().minusDays(14);
     private Path logDir;
 
